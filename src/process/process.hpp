@@ -1,0 +1,6 @@
+/*
+Esse cara vai ser nossa classe de processo
+entao esse arquivo e o process.cpp
+tem que guardar TODAS as informacoes que vamos precisar
+saber de um processo
+*/
