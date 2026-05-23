@@ -1,6 +1,16 @@
-/*
-Esse cara vai ser nossa classe de processo
-entao esse arquivo e o process.cpp
-tem que guardar TODAS as informacoes que vamos precisar
-saber de um processo
-*/
+#ifndef PROCESS_HPP
+#define PROCESS_HPP
+
+struct ProcessData {
+    int pid;
+    int initTime;
+    int priority;
+    int cpuTime;
+    int workingSetSize;
+    bool requiresPrinter;
+    bool requiresScanner;
+    bool requiresModem;
+    bool requiresSata;
+};
+
+#endif
