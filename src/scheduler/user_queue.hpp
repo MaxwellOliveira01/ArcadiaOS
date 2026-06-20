@@ -5,11 +5,9 @@
 #include <queue>
 #include "../process/process.hpp"
 
-// Estrutura para rastrear informações adicionais do processo na fila
+// Estrutura para rastrear processos na fila
 struct QueuedProcess {
     ProcessData data;
-    int quantumUsed;      // Tempo usado neste quantum (ms)
-    int waitingTime;      // Tempo esperando na fila (para aging)
     
     // Comparador para priority_queue (menor prioridade = maior urgência)
     bool operator>(const QueuedProcess& other) const {
@@ -23,52 +21,32 @@ private:
     // Cada fila usa priority_queue ordenada por prioridade (preempção por prioridade)
     std::priority_queue<QueuedProcess, std::deque<QueuedProcess>, std::greater<QueuedProcess>> queues[3];
     
-    QueuedProcess* currentProcess;  // Processo sendo executado
-    int currentQueueLevel;          // Nível da fila (0, 1 ou 2)
-    int totalWaitingTime;           // Contador para aging
-    
     static const int MAX_QUEUES = 3;
     static const int MAX_PROCESSES_PER_QUEUE = 1000;  // Limite de 1000 processos por fila
-    static const int QUANTUM_MS = 1;           // 1 milisegundo por quantum
-    static const int AGING_THRESHOLD = 5;     // Após 5 unidades, aging ocorre
-    
-    // Encontra a fila com processo de maior prioridade
-    int getHighestPriorityQueue() const;
-    
-    // Realiza o envelhecimento (aging) de processos esperando
-    void performAging();
     
     // Verifica se uma fila atingiu o limite máximo
     bool isQueueFull(int queueLevel) const;
+    
+    // Encontra a fila com processo de maior prioridade
+    int getHighestPriorityQueue() const;
 
 public:
     UserQueue();
-    ~UserQueue();
     
-    // Adiciona um novo processo (entra na fila 0 - maior prioridade)
-    void enqueue(const ProcessData& process);
+    // Adiciona um novo processo na fila especificada
+    // queueLevel: 0 (alta), 1 (média), 2 (baixa)
+    // Para novos processos, use queueLevel = 0
+    // Para realimentação, o dispatcher incrementa priority e chama com queueLevel apropriado
+    void enqueue(const ProcessData& process, int queueLevel = 0);
     
-    // Retorna o próximo processo a ser executado (remove da fila)
+    // Remove e retorna o processo de maior prioridade entre todas as filas
     QueuedProcess dequeue();
-    
-    // Simula a passagem de 1 quantum (1ms)
-    // Move o processo atual para a próxima fila se quantum foi usado
-    void tick();
     
     // Verifica se todas as filas estão vazias
     bool isEmpty() const;
     
     // Retorna o número total de processos nas filas
     int size() const;
-    
-    // Retorna o processo atualmente em execução (sem remover)
-    QueuedProcess* getCurrentProcess() const;
-    
-    // Obtém o nível da fila atual
-    int getCurrentQueueLevel() const;
-    
-    // Finaliza o processo atual (chamado quando processo termina sua execução)
-    void finishCurrentProcess();
 };
 
 #endif
