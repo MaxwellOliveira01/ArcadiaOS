@@ -1,6 +1,7 @@
 #include "user_queue.hpp"
 #include <stdexcept>
 #include <vector>
+#include <string>
 
 UserQueue::UserQueue() : currentProcess(nullptr), currentQueueLevel(-1), totalWaitingTime(0) {}
 
@@ -20,6 +21,14 @@ int UserQueue::getHighestPriorityQueue() const {
         }
     }
     return -1;  // Todas as filas vazias
+}
+
+bool UserQueue::isQueueFull(int queueLevel) const {
+    // Verifica se uma fila atingiu o limite máximo de 1000 processos
+    if (queueLevel < 0 || queueLevel >= MAX_QUEUES) {
+        return false;
+    }
+    return queues[queueLevel].size() >= MAX_PROCESSES_PER_QUEUE;
 }
 
 void UserQueue::performAging() {
@@ -50,6 +59,11 @@ void UserQueue::performAging() {
 }
 
 void UserQueue::enqueue(const ProcessData& process) {
+    // Verificar se a fila 0 está cheia
+    if (isQueueFull(0)) {
+        throw std::overflow_error("Fila 0 cheia: limite de 1000 processos atingido");
+    }
+    
     QueuedProcess qp;
     qp.data = process;
     qp.quantumUsed = 0;
@@ -99,6 +113,12 @@ void UserQueue::tick() {
     if (currentProcess->quantumUsed >= QUANTUM_MS) {
         // Não move para próxima fila se já está na fila 2
         if (currentQueueLevel < MAX_QUEUES - 1) {
+            // Verificar se a próxima fila está cheia
+            if (isQueueFull(currentQueueLevel + 1)) {
+                throw std::overflow_error("Fila " + std::to_string(currentQueueLevel + 1) + 
+                                        " cheia: limite de 1000 processos atingido. Processo nao pode ser realimentado.");
+            }
+            
             currentProcess->data.priority++;  // Reduz a prioridade
             currentProcess->quantumUsed = 0;
             currentProcess->waitingTime = 0;
@@ -107,6 +127,10 @@ void UserQueue::tick() {
             queues[currentQueueLevel + 1].push(*currentProcess);
         } else {
             // Já está na fila 2, volta para o início da fila 2
+            if (isQueueFull(MAX_QUEUES - 1)) {
+                throw std::overflow_error("Fila 2 cheia: limite de 1000 processos atingido. Processo nao pode continuar.");
+            }
+            
             currentProcess->quantumUsed = 0;
             currentProcess->waitingTime = 0;
             queues[MAX_QUEUES - 1].push(*currentProcess);

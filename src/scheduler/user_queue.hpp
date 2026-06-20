@@ -28,6 +28,7 @@ private:
     int totalWaitingTime;           // Contador para aging
     
     static const int MAX_QUEUES = 3;
+    static const int MAX_PROCESSES_PER_QUEUE = 1000;  // Limite de 1000 processos por fila
     static const int QUANTUM_MS = 1;           // 1 milisegundo por quantum
     static const int AGING_THRESHOLD = 5;     // Após 5 unidades, aging ocorre
     
@@ -36,6 +37,9 @@ private:
     
     // Realiza o envelhecimento (aging) de processos esperando
     void performAging();
+    
+    // Verifica se uma fila atingiu o limite máximo
+    bool isQueueFull(int queueLevel) const;
 
 public:
     UserQueue();
