@@ -1,5 +1,31 @@
-/*
-uma fila FIFO sem preempcao
-imagino que possamos ter um metodo de enqueue e um de dequeue
-talvez um isEmpty() ou .size() seja util, pensar nisso na hora q for implementar
-*/
+#ifndef REAL_TIME_QUEUE_HPP
+#define REAL_TIME_QUEUE_HPP
+
+#include <deque>
+#include "../process/process.hpp"
+
+class RealTimeQueue {
+private:
+    std::deque<ProcessData> queue;
+    static const int MAX_PROCESSES = 1000;
+
+public:
+    RealTimeQueue();
+    
+    // Adiciona um processo no final da fila (FIFO)
+    void enqueue(const ProcessData& process);
+    
+    // Remove e retorna o primeiro processo da fila
+    ProcessData dequeue();
+    
+    // Verifica se a fila está vazia
+    bool isEmpty() const;
+    
+    // Retorna o número de processos atualmente na fila
+    int size() const;
+    
+    // Verifica se a fila atingiu o limite máximo (1000 processos)
+    bool isFull() const;
+};
+
+#endif
