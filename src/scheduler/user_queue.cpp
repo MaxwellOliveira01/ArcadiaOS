@@ -4,11 +4,32 @@
 
 UserQueue::UserQueue() {}
 
+int UserQueue::countPIDOccurrences(int pid) const {
+    int count = 0;
+    try{
+        for (int existingPID : queuePIDs) {
+            if (existingPID == pid) {
+                count++;
+            }
+        }
+    } catch (const std::exception& e) {
+        return 0;
+    }
+    return count;
+}
+
+void UserQueue::addPID(int pid) {
+    int PIDcounter = countPIDOccurrences(pid);
+    if (PIDcounter < 3) {
+        queuePIDs.push_back(pid);
+    }
+}
+
 int UserQueue::getHighestPriorityQueue() const {
     // Retorna a fila com maior prioridade que não está vazia
     // Fila 0 > Fila 1 > Fila 2
     for (int i = 0; i < MAX_QUEUES; i++) {
-        if (!queues[i].empty()) {
+        if (!isQueueEmpty(i)) {
             return i;
         }
     }
@@ -23,11 +44,11 @@ bool UserQueue::isQueueFull(int queueLevel) const {
     return queues[queueLevel].size() >= MAX_PROCESSES_PER_QUEUE;
 }
 
-void UserQueue::enqueue(const ProcessData& process, int queueLevel) {
-    // Validar nível da fila
-    if (queueLevel < 0 || queueLevel >= MAX_QUEUES) {
-        throw std::invalid_argument("Nivel de fila invalido. Deve estar entre 0 e 2.");
-    }
+void UserQueue::enqueue(const ProcessData& process) {
+    // Verifica a quantidade de ocorrências do processo na lista de PIDs.
+    int PIDcounter = countPIDOccurrences(process.pid);
+
+    int queueLevel = PIDcounter-1;
     
     // Verificar se a fila está cheia
     if (isQueueFull(queueLevel)) {
@@ -56,13 +77,11 @@ QueuedProcess UserQueue::dequeue() {
     return next;
 }
 
-bool UserQueue::isEmpty() const {
-    for (int i = 0; i < MAX_QUEUES; i++) {
-        if (!queues[i].empty()) {
-            return false;
-        }
+bool UserQueue::isQueueEmpty(int queueLevel) const {
+    if (queueLevel < 0 || queueLevel >= MAX_QUEUES) {
+        throw std::invalid_argument("Nivel de fila invalido: " + std::to_string(queueLevel));
     }
-    return true;
+    return queues[queueLevel].empty();
 }
 
 int UserQueue::size() const {
