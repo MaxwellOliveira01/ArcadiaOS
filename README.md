@@ -3,7 +3,7 @@
 
 ## Como rodar:
 
-Compila os arquivos com o Make e ./dispatcher ou ./dispatcher processes.txt files.txt string.txt
+Compila os arquivos com o Make e ./dispatcher testcases/processes.txt testcases/files.txt testcases/string.txt
 
 ### Make
     make -> compila o codigo
