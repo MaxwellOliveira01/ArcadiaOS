@@ -2,6 +2,7 @@
 #include <string>
 
 #include "utils/input_parser.hpp"
+#include "io/resource_manager.hpp"
 
 using namespace std;
 
@@ -66,6 +67,21 @@ int main(int argc, char* argv[]) {
     cout << "Strings de referencia (" << (int)pageRefs.size() << " processos):\n";
     for(int i = 0; i < (int)pageRefs.size(); i++) {
         cout << " p" << i << ": " << pageRefs[i].size() << " referencias\n";
+    }
+
+    ResourceManager resourceManager;
+    vector<ProcessData> processesWithResources;
+    for(auto &p : processes) {
+        bool ok = resourceManager.tryAllocate(p);
+        cout << "alloc PID=" << p.pid << " =>" << (ok ? "true" : "false") << "\n";
+        if(ok) {
+            processesWithResources.push_back(p);
+        }
+    }
+
+    for(auto &p : processesWithResources) {
+        resourceManager.release(p);
+        cout << "release PID=" << p.pid << "\n";
     }
 
     //end if debug

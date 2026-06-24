@@ -14,19 +14,15 @@ public:
 
     ResourceManager();
 
-
     // Tenta alocar todos os recursos que esse processo pede
     // retorna true se consegue pegar TODOS
     // se faltar 1 ou mais, retorna false
     bool tryAllocate(ProcessData& process);
 
     // Libera todos os recursos que esse processo tinha pegado
+    // Não verifica se esse processo já passou pelo tryAllocate
+    // isso fica como responsabilidade de quem chama
     void release(ProcessData& process);
-
-    int availablePrinters();
-    int availableScanners();
-    int availableModems();
-    int availableSata();
 
 private:
     int printers;
