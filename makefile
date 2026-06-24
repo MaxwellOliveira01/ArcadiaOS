@@ -22,7 +22,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 run: $(TARGET)
-	./$(TARGET) processes.txt files.txt string.txt
+	./$(TARGET) testcases/processes.txt testcases/files.txt testcases/string.txt
 
 clean:
 	rm -rf $(BUILD_DIR) $(TARGET)
