@@ -5,7 +5,9 @@ TARGET := dispatcher
 SRC_DIR := src
 BUILD_DIR := build
 
-SRCS := $(SRC_DIR)/main.cpp
+SRCS := $(SRC_DIR)/main.cpp \
+	$(SRC_DIR)/utils/input_parser.cpp
+	
 OBJS := $(SRCS:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
 
 .PHONY: all run clean
