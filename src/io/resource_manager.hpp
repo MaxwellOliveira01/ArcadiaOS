@@ -1,8 +1,38 @@
-/*
+#ifndef RESOURCE_MANAGER_HPP
+#define RESOURCE_MANAGER_HPP
 
-cara que vai lidar com a parte de scanner, impressora e etc que
-ela cita na descricao
+#include "../process/process.hpp"
 
-imagino ao menos um metodo q recebe umn processo e tenta alocar
-os recursos que o processo pede e algum pra liberar
-*/
+class ResourceManager {
+
+public:
+
+    const int TOTAL_PRINTERS = 2;
+    const int TOTAL_SCANNERS = 1;
+    const int TOTAL_MODEMS = 1;
+    const int TOTAL_SATA = 2;
+
+    ResourceManager();
+
+
+    // Tenta alocar todos os recursos que esse processo pede
+    // retorna true se consegue pegar TODOS
+    // se faltar 1 ou mais, retorna false
+    bool tryAllocate(ProcessData& process);
+
+    // Libera todos os recursos que esse processo tinha pegado
+    void release(ProcessData& process);
+
+    int availablePrinters();
+    int availableScanners();
+    int availableModems();
+    int availableSata();
+
+private:
+    int printers;
+    int scanners;
+    int modems;
+    int sata;
+};
+
+#endif
