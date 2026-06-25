@@ -2,6 +2,7 @@
 #define PROCESS_HPP
 
 #include <vector>
+#include "../filesystem/file_system.hpp"
 
 struct ProcessData {
     int pid;
@@ -19,6 +20,12 @@ struct ProcessData {
     bool realTime;
 
     int executedTime = 0; // Tempo de CPU já utilizado
+
+    // Operações no disco
+    std::vector<FileOperation> diskOperations;
+
+    // Referências a memória
+    std::vector<int> memoryReferences;
 };
 
 class ProcessManipulator {
@@ -43,6 +50,10 @@ class ProcessManipulator {
                 setType(&process);
             }
         }
+
+        static void setDiskOperations(ProcessData* process, const std::vector<FileOperation>&& ops);
+
+        static void setMemoryReferences(ProcessData* process, const std::vector<int>&& refs);
 };
 
 #endif
