@@ -1,35 +1,22 @@
+// TODO: Fix the implementation
 #ifndef USER_QUEUE_HPP
 #define USER_QUEUE_HPP
 
 #include <deque>
 #include <queue>
 #include <vector>
+#include <algorithm>
 #include "../process/process.hpp"
-
-// Estrutura para rastrear processos na fila
-struct QueuedProcess {
-    ProcessData data;
-    
-    // Comparador para priority_queue (menor prioridade = maior urgência)
-    bool operator>(const QueuedProcess& other) const {
-        return data.priority > other.data.priority;
-    }
-};
 
 class UserQueue {
 private:
     // 3 filas de prioridade: 0 (alta), 1 (média), 2 (baixa)
-    // Cada fila usa priority_queue ordenada por prioridade (preempção por prioridade)
-    std::priority_queue<QueuedProcess, std::deque<QueuedProcess>, std::greater<QueuedProcess>> queues[3];
-    
-    static const int MAX_QUEUES = 3;
-    static const int MAX_PROCESSES_PER_QUEUE = 1000;  // Limite de 1000 processos por fila
-    
-    // Verifica se uma fila atingiu o limite máximo
-    bool isQueueFull(int queueLevel) const;
-    
-    // Encontra a fila com processo de maior prioridade
-    int getHighestPriorityQueue() const;
+    // Cada fila usa priority_queue ordenada por prioridade (preempção por prioridade)    
+    std::deque<ProcessData> high_priority_queue;
+    std::deque<ProcessData> medium_priority_queue;
+    std::deque<ProcessData> low_priority_queue;
+
+    void orderQueues();
 
 public:
     UserQueue();
@@ -38,16 +25,15 @@ public:
     // queueLevel: 0 (alta), 1 (média), 2 (baixa)
     // Para novos processos, use queueLevel = 0
     // Para realimentação, o dispatcher incrementa priority e chama com queueLevel apropriado
-    bool enqueue(ProcessData& process);
+    bool enqueue(ProcessData& p);
     
     // Remove e retorna o processo de maior prioridade entre todas as filas
     ProcessData dequeue();
-    
-    // Verifica se uma fila especifica está vazia
-    bool isQueueEmpty(int queueLevel) const;
-    
-    // Retorna o número total de processos nas filas
-    int size() const;
+
+    bool isEmpty();
+
+    int size();
+
 };
 
 #endif

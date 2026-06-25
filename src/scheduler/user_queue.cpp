@@ -1,81 +1,67 @@
+// TODO: Fix the implementation
 #include "user_queue.hpp"
 #include <stdexcept>
 #include <string>
 
 UserQueue::UserQueue() {}
 
-int UserQueue::getHighestPriorityQueue() const {
-    // Retorna a fila com maior prioridade que não está vazia
-    // Fila 0 > Fila 1 > Fila 2
-    for (int i = 0; i < MAX_QUEUES; i++) {
-        if (!isQueueEmpty(i)) {
-            return i;
-        }
-    }
-    return -1;  // Todas as filas vazias
-}
-
-bool UserQueue::isQueueFull(int queueLevel) const {
-    // Verifica se uma fila atingiu o limite máximo de 1000 processos
-    if (queueLevel < 0 || queueLevel >= MAX_QUEUES) {
-        return false;
-    }
-    return queues[queueLevel].size() >= MAX_PROCESSES_PER_QUEUE;
-}
-
-bool UserQueue::enqueue(ProcessData& process) {
-    // Verifica a quantidade de ocorrências do processo na lista de PIDs.
-    int actualLevel = process.queueLevel;
-
-    switch (actualLevel) {
-        case 0:
-            if (isQueueFull(actualLevel)) {
-                return false;  // Fila de alta prioridade cheia
-            }
-            process.cpuTime = 1;
-            queues[actualLevel].push(QueuedProcess{process});
-            
-            return true;
-        case 1:
-            if (isQueueFull(actualLevel)) {
-                return false;  // Fila de média prioridade cheia
-            }
-            process.cpuTime = 2;
-            queues[actualLevel].push(QueuedProcess{process});
-            return true;
-        default:
-            if (isQueueFull(actualLevel)) {
-                return false;  // Fila de baixa prioridade cheia
-            }
-            process.cpuTime = 2; // Mantém na fila de baixa prioridade
-            queues[actualLevel].push(QueuedProcess{process});
-            return true;
-    }
-}
-
 ProcessData UserQueue::dequeue() {
-    int highestPriorityQueue = getHighestPriorityQueue();
-    if (highestPriorityQueue == -1) {
-        throw std::runtime_error("Todas as filas estão vazias");
+    if (!high_priority_queue.empty()) {
+        ProcessData process = high_priority_queue.front();
+        high_priority_queue.pop_front();
+        process.queueLevel = 1;
+        return process;
+    } else if (!medium_priority_queue.empty()) {
+        ProcessData process = medium_priority_queue.front();
+        medium_priority_queue.pop_front();
+        process.queueLevel = 2;
+        return process;
+    } else if (!low_priority_queue.empty()) {
+        ProcessData process = low_priority_queue.front();
+        low_priority_queue.pop_front();
+        process.queueLevel = 2; // Mantém o nível da fila baixa
+        return process;
+    } else {
+        throw std::runtime_error("Todas as filas de usuário estão vazias");
     }
-    QueuedProcess process = queues[highestPriorityQueue].top();
-    queues[highestPriorityQueue].pop();
-    ProcessData p = process.data;
-    return p;
 }
 
-bool UserQueue::isQueueEmpty(int queueLevel) const {
-    if (queueLevel < 0 || queueLevel >= MAX_QUEUES) {
-        throw std::invalid_argument("Nivel de fila invalido: " + std::to_string(queueLevel));
+bool UserQueue::enqueue(ProcessData& p) {
+    bool isQueued = false;
+    switch (p.queueLevel) {
+        case 0:
+            high_priority_queue.push_back(p);
+            isQueued = true;
+            break;
+        case 1:
+            medium_priority_queue.push_back(p);
+            isQueued = true;
+            break;
+        case 2:
+            low_priority_queue.push_back(p);
+            isQueued = true;
+            break;
+        default:
+            return false;  // Nível de fila inválido
     }
-    return queues[queueLevel].empty();
+    orderQueues();
+    return isQueued;
 }
 
-int UserQueue::size() const {
-    int total = 0;
-    
-    for (int i = 0; i < MAX_QUEUES; i++) {
-        total += queues[i].size();
-    }
-    return total;
+bool UserQueue::isEmpty() {
+    return high_priority_queue.empty() && medium_priority_queue.empty() && low_priority_queue.empty();
+}
+
+int UserQueue::size() {
+    return high_priority_queue.size() + medium_priority_queue.size() + low_priority_queue.size();
+}
+
+void UserQueue::orderQueues() {
+    auto compare = [](const ProcessData& a, const ProcessData& b) {
+        return a.priority > b.priority; // Maior prioridade primeiro
+    };
+
+    std::sort(high_priority_queue.begin(), high_priority_queue.end(), compare);
+    std::sort(medium_priority_queue.begin(), medium_priority_queue.end(), compare);
+    std::sort(low_priority_queue.begin(), low_priority_queue.end(), compare);
 }

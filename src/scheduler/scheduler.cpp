@@ -3,74 +3,81 @@
 
 Scheduler::Scheduler() {}
 
-void Scheduler::initAddProcess(ProcessData& process) {
-    /* Recebe um processo e o adiciona a uma fila
-    se priority = 0 -> fila de tempo real
-    se priority != 0 -> fila de usuários
-    */
-   bool is_queued;
-    if (process.priority == 0) {
-        process.realTime = true;
-        is_queued = realTimeQueue.enqueue(process);
-    } else {
-        process.realTime = false;
-        is_queued = userQueue.enqueue(process);
-        
-    }
-    if (!is_queued) {
-        globalQueue.push_back(process);
+void Scheduler::orderProcesses() {
+    // Ordena a fila global de processos por prioridade (maior prioridade primeiro)
+    std::sort(globalQueue.begin(), globalQueue.end(), [](const ProcessData& a, const ProcessData& b) {
+        return a.priority > b.priority; // Maior prioridade primeiro
+    });
+}
+
+void Scheduler::scaleProcess(std::vector<ProcessData>& processes) {
+    // Adiciona todos os processos à fila global e ordena por prioridade
+    globalQueue.insert(globalQueue.end(), processes.begin(), processes.end());
+    orderProcesses();
+
+    // Admite os processos na fila apropriada
+    for (auto& process : globalQueue) {
+        if (admit(process)) {
+            // Se admitido, remove da fila global
+            removeGlobalProcess(process);
+        }
     }
 }
 
-std::tuple<ProcessData, int> Scheduler::getProcess() {
-    // Retorna o próximo processo e um inteiro referente a qual fila esse provesso estava.
-    int type_queue = -1; // 0 = fila de tempo real, 1 = fila de usuários, -1 = nenhuma fila
-    bool is_queued = false;
+
+bool Scheduler::admit(ProcessData& process) {
+    // Admite o processo na fila apropriada
+    if (process.realTime) {
+        return realTimeQueue.enqueue(process);
+    } else {
+        return userQueue.enqueue(process);
+    }
+}
+
+ProcessData Scheduler::getProcess() {
+    // Retorna o próximo processo a ser executado
     ProcessData process;
+    ProcessData *globalProcess = globalQueue.empty() ? nullptr : &globalQueue.front();
+    
     if (!realTimeQueue.isEmpty()) {
         process = realTimeQueue.dequeue();
-        type_queue = 0; // Indica fila de tempo real
-        
-    } else if (!userQueue.isQueueEmpty(0) || !userQueue.isQueueEmpty(1) || !userQueue.isQueueEmpty(2)) {
+    } else if (!userQueue.isEmpty()) {
         process = userQueue.dequeue();
-        type_queue = 1; // Indica fila de usuários
-
+    } else {
+        throw std::runtime_error("Nenhum processo disponível para execução");
     }
 
-    ProcessData global_process;
-    if (!globalQueue.empty()) {
-        if (type_queue == -1 || type_queue == 0) {
-            global_process = globalQueue.firstOccurrence(true);
-            is_queued = realTimeQueue.enqueue(global_process);
-
-        }else{
-            global_process = globalQueue.firstOccurrence(false);
-            is_queued = userQueue.enqueue(global_process);
-        }
-
-        if (is_queued) {
-            globalQueue.pop(global_process);
+    if (globalProcess != nullptr) {
+        // Se houver um processo na fila global, tenta adiciona-lo à fila apropriada
+        if (admit(*globalProcess)) {
+            removeGlobalProcess(*globalProcess);
         }
     }
-
-    return std::make_tuple(process, type_queue);
-
-
+    return process;
 }
 
-void Scheduler::reAddProcess(ProcessData& process) {
-    /* Realoca processo de usuário na fila*/
-
-    // 
-    ProcessManipulator::aging(process);
-
-    bool is_queued = userQueue.enqueue(process);
-
-    if (!is_queued) {
-        globalQueue.push_back(process);
+void Scheduler::feedbackProcess(ProcessData& process) {
+    // Realimenta o processo de volta à fila apropriada
+    if (!admit(process)) {
+        globalQueue.push_back(process); // Se não puder admitir, mantém na fila global
     }
 }
 
-bool Scheduler::isEmpty() const {
-    return realTimeQueue.isEmpty() && userQueue.isQueueEmpty(0) && userQueue.isQueueEmpty(1) && userQueue.isQueueEmpty(2) && globalQueue.empty();
+bool Scheduler::isEmpty() {
+    return globalQueue.empty() && realTimeQueue.isEmpty() && userQueue.isEmpty();
+}
+
+void Scheduler::printQueues() {
+    std::cout << "Global Queue: " << globalQueue.size() << " processes\n";
+    std::cout << "Real-Time Queue: " << realTimeQueue.size() << " processes\n";
+    std::cout << "User Queue: " << userQueue.size() << " processes\n";
+}
+
+void Scheduler::removeGlobalProcess(ProcessData& process) {
+    auto it = std::find_if(globalQueue.begin(), globalQueue.end(), [&process](const ProcessData& p) {
+        return p.pid == process.pid;
+    });
+    if (it != globalQueue.end()) {
+        globalQueue.erase(it);
+    }
 }
