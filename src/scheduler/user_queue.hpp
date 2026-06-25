@@ -24,20 +24,12 @@ private:
     
     static const int MAX_QUEUES = 3;
     static const int MAX_PROCESSES_PER_QUEUE = 1000;  // Limite de 1000 processos por fila
-
-    std::vector<int> queuePIDs = {};
     
     // Verifica se uma fila atingiu o limite máximo
     bool isQueueFull(int queueLevel) const;
     
     // Encontra a fila com processo de maior prioridade
     int getHighestPriorityQueue() const;
-
-    // Adiciona o PID do processo à lista de PIDs
-    void addPID(int pid);
-
-    // Verifica se o PID já existe na lista e retorna a quantidade de ocorrências.
-    int countPIDOccurrences(int pid) const;
 
 public:
     UserQueue();
@@ -46,10 +38,10 @@ public:
     // queueLevel: 0 (alta), 1 (média), 2 (baixa)
     // Para novos processos, use queueLevel = 0
     // Para realimentação, o dispatcher incrementa priority e chama com queueLevel apropriado
-    void enqueue(const ProcessData& process);
+    bool enqueue(ProcessData& process);
     
     // Remove e retorna o processo de maior prioridade entre todas as filas
-    QueuedProcess dequeue();
+    ProcessData dequeue();
     
     // Verifica se uma fila especifica está vazia
     bool isQueueEmpty(int queueLevel) const;

@@ -4,27 +4,6 @@
 
 UserQueue::UserQueue() {}
 
-int UserQueue::countPIDOccurrences(int pid) const {
-    int count = 0;
-    try{
-        for (int existingPID : queuePIDs) {
-            if (existingPID == pid) {
-                count++;
-            }
-        }
-    } catch (const std::exception& e) {
-        return 0;
-    }
-    return count;
-}
-
-void UserQueue::addPID(int pid) {
-    int PIDcounter = countPIDOccurrences(pid);
-    if (PIDcounter < 3) {
-        queuePIDs.push_back(pid);
-    }
-}
-
 int UserQueue::getHighestPriorityQueue() const {
     // Retorna a fila com maior prioridade que não está vazia
     // Fila 0 > Fila 1 > Fila 2
@@ -44,37 +23,45 @@ bool UserQueue::isQueueFull(int queueLevel) const {
     return queues[queueLevel].size() >= MAX_PROCESSES_PER_QUEUE;
 }
 
-void UserQueue::enqueue(const ProcessData& process) {
+bool UserQueue::enqueue(ProcessData& process) {
     // Verifica a quantidade de ocorrências do processo na lista de PIDs.
-    int PIDcounter = countPIDOccurrences(process.pid);
+    int actualLevel = process.queueLevel;
 
-    int queueLevel = PIDcounter-1;
-    
-    // Verificar se a fila está cheia
-    if (isQueueFull(queueLevel)) {
-        throw std::overflow_error("Fila " + std::to_string(queueLevel) + 
-                                " cheia: limite de 1000 processos atingido");
+    switch (actualLevel) {
+        case 0:
+            if (isQueueFull(actualLevel)) {
+                return false;  // Fila de alta prioridade cheia
+            }
+            process.cpuTime = 1;
+            queues[actualLevel].push(QueuedProcess{process});
+            
+            return true;
+        case 1:
+            if (isQueueFull(actualLevel)) {
+                return false;  // Fila de média prioridade cheia
+            }
+            process.cpuTime = 2;
+            queues[actualLevel].push(QueuedProcess{process});
+            return true;
+        default:
+            if (isQueueFull(actualLevel)) {
+                return false;  // Fila de baixa prioridade cheia
+            }
+            process.cpuTime = 2; // Mantém na fila de baixa prioridade
+            queues[actualLevel].push(QueuedProcess{process});
+            return true;
     }
-    
-    QueuedProcess qp;
-    qp.data = process;
-    
-    // Adiciona na fila especificada
-    queues[queueLevel].push(qp);
 }
 
-QueuedProcess UserQueue::dequeue() {
-    int highestQueue = getHighestPriorityQueue();
-    
-    if (highestQueue == -1) {
-        throw std::underflow_error("Nenhum processo disponivel nas filas");
+ProcessData UserQueue::dequeue() {
+    int highestPriorityQueue = getHighestPriorityQueue();
+    if (highestPriorityQueue == -1) {
+        throw std::runtime_error("Todas as filas estão vazias");
     }
-    
-    // Retorna o processo de maior prioridade da fila de maior prioridade
-    QueuedProcess next = queues[highestQueue].top();
-    queues[highestQueue].pop();
-    
-    return next;
+    QueuedProcess process = queues[highestPriorityQueue].top();
+    queues[highestPriorityQueue].pop();
+    ProcessData p = process.data;
+    return p;
 }
 
 bool UserQueue::isQueueEmpty(int queueLevel) const {
