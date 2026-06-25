@@ -24,8 +24,6 @@ class Dispatcher {
     public:
         Dispatcher();
 
-        
-
         ProcessData createProcessFromInput(const std::vector<int>& inputData);
 
         std::string toString(const ProcessData& process) const;
