@@ -13,6 +13,8 @@ O QUE FALTA IMPLEMENTAR:
 #define DISPATCHER_HPP
 
 #include "../process/process.hpp"
+#include "utils/input_parser.hpp"
+
 #include <iostream>
 #include <vector>
 #include <string>
@@ -28,6 +30,7 @@ class Dispatcher {
 
         std::string toString(const ProcessData& process) const;
 
+        void executeProcess(ProcessData& process, int timeSlice);
 };
 
 #endif

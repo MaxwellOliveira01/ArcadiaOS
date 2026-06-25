@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <climits>
 
 #include "utils/input_parser.hpp"
 #include "io/resource_manager.hpp"
@@ -39,15 +40,21 @@ int main(int argc, char* argv[]) {
     Dispatcher dispatcher;
     std::string output_string;
     
-    // Print dos processos criados
+    
     std::cout << "Processos (" << processes.size() << "):\n";
     for(const auto &p : processes) {
+        // Passa as operações de disco e referências de memória para os processos
+        ProcessManipulator::setDiskOperations(const_cast<ProcessData*>(&p), std::move(fileOps));
+        ProcessManipulator::setMemoryReferences(const_cast<ProcessData*>(&p), std::move(pageRefs[p.pid]));
+
+        // Print dos processos criados
         output_string = dispatcher.toString(p);
         std::cout << output_string;
     }
 
     // Define o tipo do processo
     ProcessManipulator::setType(processes);
+
 
     // Escalonar os processos criados.
     Scheduler scheduler;
@@ -58,34 +65,27 @@ int main(int argc, char* argv[]) {
     std::cout << "\n\n\nFila de Processos:\n";
     scheduler.printQueues();
 
+    int timeUsed, quota;
+
     // Execução dos processos
     while(!scheduler.isEmpty()) {
+        timeUsed = 0;
         running = scheduler.getProcess();
 
         // debug
         std::cout << "Process " << running.pid << " =>\n";
         std::cout << "  timeUsed = " << running.cpuTime - running.executedTime << "\n";
 
-        int timeUsed = 0;
-        while(running.executedTime < running.cpuTime) {
-            //1. Simula execução de 1ms de CPU
-            timeUsed++;
-            running.executedTime++;
-
-            cout << "  Executou=" << timeUsed << " vez.\n";
-
-            
-            
-            /*Operações realizadas pelo dispatcher*/
-            // Executa instruções do processo
-
-            // Executa operaçoes no sistema de arquivos
-
-            if (!running.realTime) break; // Se for processo de usuário, executa apenas 1ms de CPU
+        if (running.realTime) {
+            quota = INT_MAX; // Executa até o final do processo
+        } else {
+            quota = scheduler.QUANTUM_TIME;
         }
-        // end debug
 
-        
+
+        // executor principal
+        dispatcher.executeProcess(running, quota);
+
 
         if (running.executedTime < running.cpuTime) {
             // Se o processo não terminou, re-adiciona na fila
