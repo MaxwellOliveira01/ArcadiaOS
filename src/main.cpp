@@ -46,30 +46,31 @@ int main(int argc, char* argv[]) {
         std::cout << output_string;
     }
 
+    // Define o tipo do processo
+    ProcessManipulator::setType(processes);
+
     // Escalonar os processos criados.
     Scheduler scheduler;
-    for (auto &p : processes) {
-        scheduler.initAddProcess(p);
-    }
+    scheduler.scaleProcess(processes);
+    ProcessData running;
+
+    // if debug
+    std::cout << "\n\n\nFila de Processos:\n";
+    scheduler.printQueues();
 
     // Execução dos processos
     while(!scheduler.isEmpty()) {
-        auto [process, queueType] = scheduler.getProcess();
-        if (queueType == -1) {
-            std::cout << "Nenhum processo disponivel para execucao\n";
-            break;
-        }
+        running = scheduler.getProcess();
 
         // debug
-        std::cout << "Process " << process.pid << " =>\n";
-        std::cout << "  queueType = " << queueType << "\n"
-            << "  cpuTime = " << process.cpuTime << "\n";
+        std::cout << "Process " << running.pid << " =>\n";
+        std::cout << "  timeUsed = " << running.cpuTime - running.executedTime << "\n";
 
         int timeUsed = 0;
-        while((timeUsed < scheduler.QUANTUM_TIME || queueType == 0) && process.executedTime < process.cpuTime) {
+        while(running.executedTime < running.cpuTime) {
             //1. Simula execução de 1ms de CPU
             timeUsed++;
-            process.executedTime++;
+            running.executedTime++;
 
             cout << "  Executou=" << timeUsed << " vez.\n";
 
@@ -79,13 +80,30 @@ int main(int argc, char* argv[]) {
             // Executa instruções do processo
 
             // Executa operaçoes no sistema de arquivos
+
+            if (!running.realTime) break; // Se for processo de usuário, executa apenas 1ms de CPU
         }
         // end debug
 
-        if (process.executedTime < process.cpuTime) {
+        
+
+        if (running.executedTime < running.cpuTime) {
             // Se o processo não terminou, re-adiciona na fila
-            scheduler.reAddProcess(process);
+            ProcessManipulator::aging(&running);
+
+            // debug: Verifica se o processo está sofrendo envelhecimento
+            std::cout << "  Aging: PID=" << running.pid
+                << " priority=" << running.priority << "\n";
+
+            // end debug.
+
+            scheduler.feedbackProcess(running);
         }
+
+        // debug
+        std::cout << "\n\n\nFila de Processos:\n";
+        scheduler.printQueues();
+        std::cout << "\n\n\n";
 
 
     }
