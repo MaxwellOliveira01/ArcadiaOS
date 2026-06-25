@@ -1,6 +1,8 @@
 #include "dispatcher.hpp"
 #include <stdexcept>
 
+#include "../process/process.hpp"
+
 
 Dispatcher::Dispatcher() {}
 
@@ -21,13 +23,12 @@ ProcessData Dispatcher::createProcessFromInput(const std::vector<int>& inputData
         throw std::invalid_argument("Prioridade deve ser um numero inteiro positivo.");
     }    
     process.priority = inputData[1];
-
     process.cpuTime = inputData[2];
     process.workingSetSize = inputData[3];
-    process.requiresPrinter = (inputData[4] == 1) ? true : false;
-    process.requiresScanner = (inputData[5] == 1) ? true : false;
-    process.requiresModem = (inputData[6] == 1) ? true : false;
-    process.requiresSata = (inputData[7] == 1) ? true : false; 
+    process.requiresPrinter = inputData[4];
+    process.requiresScanner = inputData[5];
+    process.requiresModem = inputData[6];
+    process.requiresSata = inputData[7];
 
     // Mostra os dados do processo criados.
     std::string string_process = toString(process);
@@ -36,8 +37,8 @@ ProcessData Dispatcher::createProcessFromInput(const std::vector<int>& inputData
     return process;
 }
 
-std::string Dispatcher::toString(const ProcessData& process = ProcessData()) const {
-    return "dispatcher =>\n",
+std::string Dispatcher::toString(const ProcessData& process) const {
+    return "dispatcher =>\n"
             "   PID: " + std::to_string(process.pid) + "\n" +
             "   frame: " + std::to_string(process.workingSetSize) + "\n" +
             "   priority: " + std::to_string(process.priority) + "\n" +

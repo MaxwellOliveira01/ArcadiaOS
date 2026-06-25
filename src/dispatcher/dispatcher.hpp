@@ -19,14 +19,16 @@ O QUE FALTA IMPLEMENTAR:
 
 class Dispatcher {
     private:
-        int nextPid;
-
-        std::string toString(const ProcessData& process = ProcessData()) const;
+        int nextPid = 0;
 
     public:
-        Dispatcher() : nextPid(1) {};
+        Dispatcher();
+
+        
 
         ProcessData createProcessFromInput(const std::vector<int>& inputData);
+
+        std::string toString(const ProcessData& process) const;
 
 };
 
