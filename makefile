@@ -13,6 +13,8 @@ SRCS := $(SRC_DIR)/main.cpp \
 	$(SRC_DIR)/scheduler/real_time_queue.cpp \
 	$(SRC_DIR)/scheduler/user_queue.cpp \
 	$(SRC_DIR)/scheduler/global_queue.cpp \
+	$(SRC_DIR)/process/process.cpp \
+	$(SRC_DIR)/filesystem/file_system.cpp \
 
 	
 OBJS := $(SRCS:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
