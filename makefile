@@ -7,7 +7,13 @@ BUILD_DIR := build
 
 SRCS := $(SRC_DIR)/main.cpp \
 	$(SRC_DIR)/utils/input_parser.cpp \
-	$(SRC_DIR)/io/resource_manager.cpp
+	$(SRC_DIR)/io/resource_manager.cpp \
+	$(SRC_DIR)/dispatcher/dispatcher.cpp \
+	$(SRC_DIR)/scheduler/scheduler.cpp \
+	$(SRC_DIR)/scheduler/real_time_queue.cpp \
+	$(SRC_DIR)/scheduler/user_queue.cpp \
+	$(SRC_DIR)/scheduler/global_queue.cpp \
+
 	
 OBJS := $(SRCS:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
 
