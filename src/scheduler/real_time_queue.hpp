@@ -13,7 +13,7 @@ public:
     RealTimeQueue();
     
     // Adiciona um processo no final da fila (FIFO)
-    void enqueue(const ProcessData& process);
+    bool enqueue(const ProcessData& process);
     
     // Remove e retorna o primeiro processo da fila
     ProcessData dequeue();

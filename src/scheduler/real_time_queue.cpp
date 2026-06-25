@@ -3,11 +3,12 @@
 
 RealTimeQueue::RealTimeQueue() {}
 
-void RealTimeQueue::enqueue(const ProcessData& process) {
+bool RealTimeQueue::enqueue(const ProcessData& process) {
     if (isFull()) {
-        throw std::overflow_error("Fila cheia: limite de 1000 processos atingido");
+        return false;
     }
     queue.push_back(process);
+    return true;
 }
 
 ProcessData RealTimeQueue::dequeue() {
