@@ -1,5 +1,3 @@
-
-
 #ifndef SCHEDULER_HPP
 #define SCHEDULER_HPP
 
@@ -7,18 +5,27 @@
 #include "../process/process.hpp"
 #include "real_time_queue.hpp"
 #include "user_queue.hpp"
+#include "global_queue.hpp"
 
 class Scheduler {
     private:
-        std::deque<ProcessData> processes;
+        GlobalQueue globalQueue; // Fila de processos que não foram enfileirados
+        RealTimeQueue realTimeQueue;
+        UserQueue userQueue;
+        
     public:
-        void addProcess(const ProcessData& process);
+        const int QUANTUM_TIME = 1; // Tempo de quantum para processos de usuário
 
-        ProcessData getProcess();
+        Scheduler();
+
+        void initAddProcess(ProcessData& process);
+
+        std::tuple<ProcessData, int> getProcess();
+
+        void reAddProcess(ProcessData& process);
 
         bool isEmpty() const;
 
-        void Scheduler::scale(const ProcessData& process, RealTimeQueue& realTimeQueue, UserQueue& userQueue, bool& executed);
 };
 
 #endif
