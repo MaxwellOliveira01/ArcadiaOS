@@ -58,52 +58,113 @@ int main(int argc, char* argv[]) {
 
     // Escalonar os processos criados.
     Scheduler scheduler;
-    scheduler.scaleProcess(processes);
-    ProcessData running;
+    std::vector<ProcessData> readyProcesses;
+    ProcessData* currentProcess = nullptr;
 
-    // if debug
+    /*// if debug
     std::cout << "\n\n\nFila de Processos:\n";
     scheduler.printQueues();
+    */
 
-    int timeUsed, quota;
+    int timeUsed, clock = 0;
 
-    // Execução dos processos
-    while(!scheduler.isEmpty()) {
-        timeUsed = 0;
-        running = scheduler.getProcess();
 
-        // debug
-        std::cout << "Process " << running.pid << " =>\n";
-        std::cout << "  timeUsed = " << running.cpuTime - running.executedTime << "\n";
+    // ----------------- ÁREA DE EXECUÇÃO ----------------- //
+    while(true) {
+        if (currentProcess == nullptr) {
+            if (processes.empty() && scheduler.isEmpty()) {
+                std::cout << "Todos os processos foram executados.\n";
+                break;
+            }
+            clock++; // Incrementa o relógio do sistema
+            
+            readyProcesses = dispatcher.initProcess(&processes, clock);
+            
+            if (!readyProcesses.empty()) {
+                scheduler.scaleProcess(readyProcesses);
+            }
+            
+            // Verifica se ainda existe processo no escalonador
+            if (scheduler.isEmpty()) {
+                continue; // Nenhum processo pronto para execução, incrementa o relógio
+            }
 
-        if (running.realTime) {
-            quota = INT_MAX; // Executa até o final do processo
+            currentProcess = scheduler.getProcess();
+
+            // debug
+            std::cout << "Process " << currentProcess->pid << " =>\n";
+
+            // Estipulador de Quota
+            if (!currentProcess->realTime) {
+                timeUsed = 0;
+            }
+
+        }
+
+
+        // -------------------- EXECUÇÃO DO PROCESSO -------------------- //
+
+        // VERIFICA SE TEM QUE EXERCUTAR INSTRUÇÕES
+        if (currentProcess->executedTime < currentProcess->cpuTime) {
+            currentProcess->executedTime++;
+
+            //debug: Simula a execução de 1 instrução de CPU
+            std::cout << "  P" << currentProcess->pid << " instruction " << currentProcess->executedTime << std::endl;
+
+        }
+        
+        // VERIFICA SE TEM QUE FAZER OPERAÇÕES NO DISCO
+        else if (currentProcess->diskOperations.size() > 0) {
+            // Executa a operação de disco
+            FileOperation op = currentProcess->diskOperations.front();
+            currentProcess->diskOperations.erase(currentProcess->diskOperations.begin());
+            
+            // debug: Print the disk operation being executed
+            std::cout << "  Process " << currentProcess->pid << " executed disk operation: "
+                    << (op.opCode == 0 ? "create" : "delete") << " file: "
+                    << op.fileName << " blocks: " << op.numBlocks << std::endl;
+
+        } 
+        
+        // VERIFICA SE TEM QUE FAZER REFERÊNCIAS DE MEMÓRIA
+        else if (currentProcess->memoryReferences.size() > 0) {
+            // Executa a referência de memória
+            int ref = currentProcess->memoryReferences.front();
+            currentProcess->memoryReferences.erase(currentProcess->memoryReferences.begin());
+
+            //debug: Simula a execução da referência de memória
+            std::cout << "  Process " << currentProcess->pid << " executed memory reference: "
+                    << ref << std::endl;
+
         } else {
-            quota = scheduler.QUANTUM_TIME;
+            // Nenhuma operação restante, o processo terminou
+            std::cout << "  Process " << currentProcess->pid << " has completed execution." << std::endl;
+            currentProcess = nullptr;
+
         }
 
+        timeUsed++;
 
-        // executor principal
-        dispatcher.executeProcess(running, quota);
-
-
-        if (running.executedTime < running.cpuTime) {
-            // Se o processo não terminou, re-adiciona na fila
-            ProcessManipulator::aging(&running);
-
-            // debug: Verifica se o processo está sofrendo envelhecimento
-            std::cout << "  Aging: PID=" << running.pid
-                << " priority=" << running.priority << "\n";
-
-            // end debug.
-
-            scheduler.feedbackProcess(running);
+        if (currentProcess->executedTime >= currentProcess->cpuTime && currentProcess->diskOperations.size() == 0 && currentProcess->memoryReferences.size() == 0) {
+            // Processo terminou, libera recursos e remove da fila
+            std::cout << "  Process " << currentProcess->pid << " has completed execution." << std::endl;
+            currentProcess = nullptr;
         }
 
-        // debug
+        // -------------------- FIM DA EXECUÇÃO DO PROCESSO -------------------- //
+
+        if (currentProcess != nullptr && !currentProcess->realTime && timeUsed >= scheduler.QUANTUM_TIME) {
+            // Se o processo de usuário atingiu o tempo de quantum, realimenta-o
+            scheduler.feedbackProcess(*currentProcess);
+            currentProcess = nullptr;
+            
+        }
+
+        /*// debug
         std::cout << "\n\n\nFila de Processos:\n";
         scheduler.printQueues();
         std::cout << "\n\n\n";
+        */
 
 
     }

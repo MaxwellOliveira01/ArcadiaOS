@@ -1,5 +1,6 @@
 #include "dispatcher.hpp"
 #include <stdexcept>
+#include <algorithm>
 
 #include "../process/process.hpp"
 
@@ -68,39 +69,19 @@ std::string Dispatcher::toString(const ProcessData& process) const {
     return output + "\n";
 }
 
-void Dispatcher::executeProcess(ProcessData& process, int timeSlice) {
-    // Simula a execução do processo. Executa timeSlice operações
-    while (timeSlice > 0) {
-        if (process.executedTime < process.cpuTime) {
-            process.executedTime++;
+std::vector<ProcessData> Dispatcher::initProcess (std::vector<ProcessData>* processes, const int currentClock) {
+    std::vector<ProcessData> readyProcesses = std::vector<ProcessData>();
+    for (auto& process : *processes) {
+        if (process.initTime == currentClock) {
+            readyProcesses.push_back(process);
 
-            //debug: Simula a execução de 1 instrução de CPU
-            std::cout << "P" << process.pid << " instruction " << process.executedTime << std::endl;
-
-        } else if (process.diskOperations.size() > 0) {
-            // Executa a operação de disco
-            FileOperation op = process.diskOperations.front();
-            process.diskOperations.erase(process.diskOperations.begin());
-            
-            // debug: Print the disk operation being executed
-            std::cout << "Process " << process.pid << " executed disk operation: "
-                      << (op.opCode == 0 ? "create" : "delete") << " file: "
-                      << op.fileName << " blocks: " << op.numBlocks << std::endl;
-
-        } else if (process.memoryReferences.size() > 0) {
-            // Executa a referência de memória
-            int ref = process.memoryReferences.front();
-            process.memoryReferences.erase(process.memoryReferences.begin());
-
-            //debug: Simula a execução da referência de memória
-            std::cout << "Process " << process.pid << " executed memory reference: "
-                      << ref << std::endl;
-
-        } else {
-            // Nenhuma operação restante, o processo terminou
-            std::cout << "Process " << process.pid << " has completed execution." << std::endl;
-            break;
+            // Descarta o processo da lista de processos
+            processes->erase(std::remove_if(processes->begin(), processes->end(),
+                [&process](const ProcessData& p) { return p.pid == process.pid; }),
+                processes->end());
         }
-        timeSlice--;
     }
+
+    // Return a default-constructed ProcessData if no process is found
+    return readyProcesses;
 }
