@@ -30,7 +30,7 @@ class Dispatcher {
 
         std::string toString(const ProcessData& process) const;
 
-        void executeProcess(ProcessData& process, int timeSlice);
+        std::vector<ProcessData> initProcess (std::vector<ProcessData>* processes, const int currentClock);
 };
 
 #endif
