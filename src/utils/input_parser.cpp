@@ -5,18 +5,16 @@
 #include <sstream>
 #include <cctype>
 
-using namespace std; // remover?
-
 namespace {
     
-    string trimEnd(string s) {
+    std::string trimEnd(std::string s) {
         while((int)s.size() && isspace(s.back())) {
             s.pop_back();
         }
         return s;
     }
 
-    string trim(string s) {
+    std::string trim(std::string s) {
         s = trimEnd(s);
         reverse(s.begin(), s.end());
 
@@ -26,25 +24,25 @@ namespace {
         return s;
     }
 
-    vector<string> splitCsv(const string& line) {
-        vector<string> out;
-        stringstream ss(line);
-        string token;
+    std::vector<std::string> splitCsv(const std::string& line) {
+        std::vector<std::string> out;
+        std::stringstream ss(line);
+        std::string token;
         while(getline(ss, token, ',')) {
             out.push_back(trim(token));
         }
         return out;
     }
 
-    ifstream openOrThrow(string filename) {
-        ifstream in(filename);
+    std::ifstream openOrThrow(std::string filename) {
+        std::ifstream in(filename);
         if(!in.is_open()) {
-            throw runtime_error("Erro ao abrir arquivo " + filename);
+            throw std::runtime_error("Erro ao abrir arquivo " + filename);
         }
         return in;
     }
 
-    bool isBlank(string& line) {
+    bool isBlank(std::string& line) {
         for(char c : line) {
             if(!isspace(c)) {
                 return false;
@@ -57,10 +55,10 @@ namespace {
 
 namespace InputParser {
 
-    vector<ProcessData> parseProcesses(const string& filename) {
-        ifstream in = openOrThrow(filename);
-        vector<ProcessData> processes;
-        string line;
+    std::vector<ProcessData> parseProcesses(std::string& filename) {
+        std::ifstream in = openOrThrow(filename);
+        std::vector<ProcessData> processes;
+        std::string line;
 
         int pid = 0;
 
@@ -69,10 +67,10 @@ namespace InputParser {
                 continue;
             }
 
-            vector<string> fields = splitCsv(line);
+            std::vector<std::string> fields = splitCsv(line);
 
             if((int)fields.size() != 8) {
-                throw runtime_error("Linha invalida `" + line + "`, esperado 8 campos");
+                throw std::runtime_error("Linha invalida `" + line + "`, esperado 8 campos");
             }
             
             ProcessData p;
@@ -92,12 +90,12 @@ namespace InputParser {
         return processes;
     }
     
-    pair<FileSystemInit, vector<FileOperation>> parseFiles(const string& filename) {
-        ifstream in = openOrThrow(filename);
+    std::pair<FileSystemInit, std::vector<FileOperation>> parseFiles(std::string& filename) {
+        std::ifstream in = openOrThrow(filename);
         FileSystemInit init;
 
-        vector<FileOperation> ops;
-        string line;
+        std::vector<FileOperation> ops;
+        std::string line;
 
         auto nextLine = [&]() -> bool {
             while(getline(in, line)) {
@@ -109,24 +107,24 @@ namespace InputParser {
         };
 
         if(!nextLine()) {
-            throw runtime_error(filename + ": total de blocos faltando");
+            throw std::runtime_error(filename + ": total de blocos faltando");
         }
         init.totalBlocks = stoi(trim(line));
 
         if(!nextLine()) {
-            throw runtime_error(filename + ": numero de arquivos existentes faltando");
+            throw std::runtime_error(filename + ": numero de arquivos existentes faltando");
         }
         int count = stoi(trim(line));
 
         for(int i = 0; i < count; i++) {
             if(!nextLine()) {
-                throw runtime_error(filename + ": aquivo existente faltando");
+                throw std::runtime_error(filename + ": aquivo existente faltando");
             }
 
-            vector<string> fields = splitCsv(line);
+            std::vector<std::string> fields = splitCsv(line);
 
             if((int)fields.size() != 3) {
-                throw runtime_error(filename + ": aquivo existente invalido: " + line);
+                throw std::runtime_error(filename + ": aquivo existente invalido: " + line);
             }
 
             FileEntry entry;
@@ -137,9 +135,9 @@ namespace InputParser {
         }
 
         while(nextLine()) {
-            vector<string> fields = splitCsv(line);
+            std::vector<std::string> fields = splitCsv(line);
             if((int)fields.size() != 3 && (int)fields.size() != 4) {
-                throw runtime_error(filename + ": operacao invalida : " + line);
+                throw std::runtime_error(filename + ": operacao invalida : " + line);
             }
             FileOperation op;
             op.pid = stoi(fields[0]);
@@ -153,18 +151,18 @@ namespace InputParser {
 
     }
     
-    vector<vector<int>> parseStrings(const string& filename) {
-        ifstream in = openOrThrow(filename);
-        vector<vector<int>> all;
-        string line;
+    std::vector<std::vector<int>> parseStrings(std::string& filename) {
+        std::ifstream in = openOrThrow(filename);
+        std::vector<std::vector<int>> all;
+        std::string line;
 
         while(getline(in, line)) {
             if(isBlank(line)) {
                 continue;
             }
 
-            vector<string> fields = splitCsv(line);
-            vector<int> pages;
+            std::vector<std::string> fields = splitCsv(line);
+            std::vector<int> pages;
             
             for(auto& f : fields) {
                 pages.push_back(stoi(f));
