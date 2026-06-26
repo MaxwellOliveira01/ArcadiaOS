@@ -14,7 +14,7 @@ public:
     // Aloca usando o algoritmo first-fit
     // retorna o primeiro bloco se der certo
     // retorna -1 se der errado
-    int allocate(string name, int numBlocks); // first fit
+    int tryAllocate(string name, int numBlocks); // first fit
 
     // libera um range de numBlocks comecando de startBlock
     void freeBlocks(int startBlock, int numBlocks);
@@ -28,10 +28,19 @@ public:
 
     // imprime o mapa, "0" se o bloco tiver livre
     // ou o nome do processo que tem aquele bloco
-    void printMap();
+    string getMemoryMap();
 
 private:
+    
     vector<string> blocks;
+
+    // verifica se um range tá disponivel
+    bool isRangeAvailable(int start, int numBlocks);
+
+    // seta o range pra `name`, nao verifica se tá disponivel
+    // confia que quem chama verifica isRangeAvailableAntes
+    void allocate(string name, int start, int numBlocks);
+
 };
 
 #endif
