@@ -1,17 +1,17 @@
 #include "disk.hpp"
 
 namespace {
-    string EMPTY = "0";
+    std::string EMPTY = "0";
 };
 
 Disk::Disk(int totalBlocks) {
-    blocks = vector<string>(totalBlocks, EMPTY);
+    blocks = std::vector<std::string>(totalBlocks, EMPTY);
 }
 
-int Disk::tryAllocate(string name, int numBlocks) {
+int Disk::tryAllocate(std::string name, int numBlocks) {
     int start = -1;
 
-    for(int i = 0; i + numBlocks < (int)blocks.size(); i++) {
+    for(int i = 0; i + numBlocks - 1 < (int)blocks.size(); i++) {
         if(isRangeAvailable(i, numBlocks)) {
             start = i;
             break;
@@ -27,12 +27,10 @@ int Disk::tryAllocate(string name, int numBlocks) {
 }
 
 void Disk::freeBlocks(int startBlock, int numBlocks) {
-    for(int i = 0; i < numBlocks && i + numBlocks < (int)blocks.size(); i++) {
-        blocks[i + startBlock] = EMPTY;
-    }
+    allocate(EMPTY, startBlock, numBlocks);
 }
 
-bool Disk::placeExisting(string name, int startBlock, int numBlocks) {
+bool Disk::placeExisting(std::string name, int startBlock, int numBlocks) {
     if(!isRangeAvailable(startBlock, numBlocks)) {
         return false;
     }
@@ -40,8 +38,8 @@ bool Disk::placeExisting(string name, int startBlock, int numBlocks) {
     return true;
 }
 
-string Disk::getMemoryMap() {
-    string result = "";
+std::string Disk::getMemoryMap() {
+    std::string result = "";
     for(int i = 0; i < (int)blocks.size(); i++) {
         result += blocks[i];
         if(i + 1 < (int)blocks.size()) result += " ";
@@ -50,7 +48,7 @@ string Disk::getMemoryMap() {
 }
 
 bool Disk::isRangeAvailable(int start, int numBlocks) {
-    if(start + numBlocks >= (int)blocks.size()) {
+    if(start + numBlocks - 1 >= (int)blocks.size()) {
         return false;
     }
 
@@ -63,7 +61,7 @@ bool Disk::isRangeAvailable(int start, int numBlocks) {
     return true;
 }
 
-void Disk::allocate(string name, int start, int numBlocks) {
+void Disk::allocate(std::string name, int start, int numBlocks) {
     for(int i = start; i < start + numBlocks; i++) {
         blocks[i] = name;
     }

@@ -4,8 +4,6 @@
 #include <string>
 #include <vector>
 
-using namespace std; // acho que vai dar conflito
-
 class Disk {
 public:
 
@@ -14,7 +12,7 @@ public:
     // Aloca usando o algoritmo first-fit
     // retorna o primeiro bloco se der certo
     // retorna -1 se der errado
-    int tryAllocate(string name, int numBlocks); // first fit
+    int tryAllocate(std::string name, int numBlocks); // first fit
 
     // libera um range de numBlocks comecando de startBlock
     void freeBlocks(int startBlock, int numBlocks);
@@ -24,22 +22,22 @@ public:
     // nao tem firstFit
     // se tiver sobreposicao com algum outro OU se estourar a memoria, retorna falso
     // caso contrario deu certo e retorna verdadeiro
-    bool placeExisting(string name, int start, int numBlocks);
+    bool placeExisting(std::string name, int start, int numBlocks);
 
     // imprime o mapa, "0" se o bloco tiver livre
     // ou o nome do processo que tem aquele bloco
-    string getMemoryMap();
+    std::string getMemoryMap();
 
 private:
     
-    vector<string> blocks;
+    std::vector<std::string> blocks;
 
     // verifica se um range tá disponivel
     bool isRangeAvailable(int start, int numBlocks);
 
     // seta o range pra `name`, nao verifica se tá disponivel
     // confia que quem chama verifica isRangeAvailableAntes
-    void allocate(string name, int start, int numBlocks);
+    void allocate(std::string name, int start, int numBlocks);
 
 };
 
