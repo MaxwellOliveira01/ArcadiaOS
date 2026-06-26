@@ -34,9 +34,9 @@ bool Scheduler::admit(ProcessData& process) {
     }
 }
 
-ProcessData Scheduler::getProcess() {
+ProcessData* Scheduler::getProcess() {
     // Retorna o próximo processo a ser executado
-    ProcessData process;
+    static ProcessData process;
     ProcessData *globalProcess = globalQueue.empty() ? nullptr : &globalQueue.front();
     
     if (!realTimeQueue.isEmpty()) {
@@ -53,7 +53,7 @@ ProcessData Scheduler::getProcess() {
             removeGlobalProcess(*globalProcess);
         }
     }
-    return process;
+    return &process;
 }
 
 void Scheduler::feedbackProcess(ProcessData& process) {

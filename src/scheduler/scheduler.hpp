@@ -27,7 +27,7 @@ class Scheduler {
 
         bool admit(ProcessData& process);
 
-        ProcessData getProcess();
+        ProcessData* getProcess();
 
         void feedbackProcess(ProcessData& process);
 
