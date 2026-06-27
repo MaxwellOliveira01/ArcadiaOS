@@ -52,10 +52,6 @@ int main(int argc, char* argv[]) {
         std::cout << output_string;
     }
 
-    // Define o tipo do processo
-    ProcessManipulator::setType(processes);
-
-
     // Escalonar os processos criados.
     Scheduler scheduler;
     std::vector<ProcessData> readyProcesses;

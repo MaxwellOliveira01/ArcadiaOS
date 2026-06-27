@@ -84,6 +84,8 @@ namespace InputParser {
             p.requiresModem = stoi(fields[6]) != 0;
             p.requiresSata = stoi(fields[7]) != 0;
 
+            p.realTime = (p.priority == 0);
+
             processes.push_back(p);
         }
 
