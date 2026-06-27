@@ -33,9 +33,7 @@ class ProcessManipulator {
     public:
         static void aging(ProcessData* process) {
             // Reduz a prioridade do processo para evitar starvation
-            if (process->priority > 0) {
-                process->priority--;
-            }
+            process->priority = max(process->priority - 1, 1);
         }
 
         static void setDiskOperations(ProcessData* process, const std::vector<FileOperation>&& ops);
