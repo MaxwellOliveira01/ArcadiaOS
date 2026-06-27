@@ -1,20 +1,31 @@
 #include "page_table.hpp"
+#include "memory_manager.hpp"
+#include "process.hpp"
 
 // Inicializa o contexto de memoria local do processo (construtor)
-PageTable::PageTable(int workingSetSize, int firstPage, bool realTime) 
-    : workingSetSize(workingSetSize), pTable(), localLRU() {
+PageTable::PageTable(MemoryManager* memMgr, ProcessData* proc) 
+    : memoryManager(memMgr), process(proc), pTable(), localLRU() {
     
     activePages = 1;
-    pageFaults = 0;
     offSet = 0;
 
-    if (!realTime) {
+    if (!process->priority) {
         offSet = 8; // Processos de usuario começam no frame fisico 8
     }
 
+    int firstPage = process->memoryReferences[0];
     pTable[firstPage] = 0; // Mapeia a pagina inicial para o indice 0 do vetor
     localLRU.emplace_back(firstPage, offSet, -1, -1);
     headIdx = tailIdx = 0;
+}
+
+PageTable::~PageTable() {
+    // Varre todas as paginas mapeadas e desaloca seus frames fisicos na RAM global
+    for (const auto& node : localLRU) {
+        if (node.physicalFrame != -1) {
+            memoryManager->freePhysicalFrame(node.physicalFrame);
+        }
+    }
 }
 
 // pageHit : Simula a CPU referenciando uma pagina virtual
@@ -23,7 +34,7 @@ int PageTable::pageHit(int page) {
     
     // Se a pagina nao for encontrada na tabela local, ocorre um Page Fault
     if (pTable.find(page) == pTable.end()) {
-        return addPage(page); // addPage ja incrementa o fault e retorna o frameIdx correto
+        frameIdx = addPage(page); // addPage ja incrementa o fault e retorna o frameIdx correto
     }
     else {
         // Page Hit: a pagina ja esta mapeada na RAM local deste processo
@@ -63,10 +74,10 @@ int PageTable::pageHit(int page) {
 
 // addPage : Gerencia o Page Fault e a substituicao local se necessario
 int PageTable::addPage(int page) {
-    pageFaults++;
+    process->pageFaults++;
     
     // Se o processo ainda nao atingiu o limite maximo de seu Working Set
-    if (activePages < workingSetSize) {
+    if (activePages < process->workingSetSize) {
         pTable[page] = activePages;
         
         // Cria um novo no no final do vetor
@@ -99,6 +110,8 @@ int PageTable::addPage(int page) {
         localLRU[tailIdx].nextIdx = lastFrame;
         tailIdx = lastFrame;
     }
+
+    memoryManager->allocatePhysicalFrame(localLRU[tailIdx].physicalFrame, process->pid, localLRU[tailIdx].pageId);
     
     return tailIdx; // Retorna o indice logico onde a pagina foi alocada
 }

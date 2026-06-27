@@ -20,6 +20,7 @@ public:
     MemoryManager() : ram(20) {}
 
     void allocatePhysicalFrame(int frameId, int pid, int pageId);
+    void freePhysicalFrame(int frameId);
 };
 
 #endif // MEMORY_MANAGER_HPP

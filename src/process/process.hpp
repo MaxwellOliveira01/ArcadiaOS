@@ -10,6 +10,7 @@ struct ProcessData {
     int priority;
     int cpuTime;
     int workingSetSize;
+    int pageFaults = 0;
     bool requiresPrinter;
     bool requiresScanner;
     bool requiresModem;

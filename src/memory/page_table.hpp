@@ -4,6 +4,9 @@
 #include <unordered_map>
 #include <vector>
 
+class MemoryManager;
+class Process;
+
 // Representa o no da lista ligada
 struct FrameNode {
     int pageId;
@@ -18,31 +21,31 @@ struct FrameNode {
 class PageTable {
 private:
     int activePages;
-    int pageFaults;
     int headIdx;
     int tailIdx;
-    int workingSetSize;
     int offSet;
+
+    MemoryManager* memoryManager;
+    ProcessData* process;
+
+    // Tabela de paginas local: guarda o indice do no no vetor localLRU
+    std::unordered_map<int, int> pTable;  
+
+    // Vetor que simula a Fila LRU local
+    std::vector<FrameNode> localLRU;
 
     // Funcao auxiliar do pageHit
     int addPage(int page);
 
 public:
 
-    PageTable(int workingSetSize, int firstPage, bool realTime);
-    
-    // Tabela de paginas local: guarda o indice do no no vetor localLRU
-    std::unordered_map<int, int> pTable;  
-    
-    // Vetor que simula a Fila LRU local
-    std::vector<FrameNode> localLRU;
+    PageTable(MemoryManager* memMgr, ProcessData* proc);
+
+    // Destrutor para liberar os frames fisicos globalmente
+    ~PageTable();
 
     // Funcao chamada quando a CPU referencia uma pagina
     int pageHit(int page);
-
-    // Getters uteis
-    int getPageFaults() const { return pageFaults; }
-    int getActivePages() const { return activePages; }
 };
 
 #endif // PAGE_TABLE_HPP
