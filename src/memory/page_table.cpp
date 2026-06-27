@@ -37,7 +37,7 @@ int PageTable::pageHit(int page) {
         frameIdx = addPage(page); // addPage ja incrementa o fault e retorna o frameIdx correto
     }
     else {
-        // Page Hit: a pagina ja esta mapeada na RAM local deste processo
+        // a pagina ja esta mapeada na RAM local deste processo
         frameIdx = pTable[page];
         
         // Caso a pagina seja o Head (menos recentemente usada), ela vai para o final
@@ -69,7 +69,7 @@ int PageTable::pageHit(int page) {
         // else -> a pagina eh o tail, e nao precisa ser modificada
     }
     
-    return frameIdx; // Retorna o indice logico do vetor
+    return localLRU[frameIdx].physicalFrame; // Retorna o frame fisico da ram
 }
 
 // addPage : Gerencia o Page Fault e a substituicao local se necessario
