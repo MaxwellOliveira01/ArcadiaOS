@@ -1,6 +1,6 @@
 #include "page_table.hpp"
 #include "memory_manager.hpp"
-#include "process.hpp"
+#include "../process/process.hpp"
 
 // Inicializa o contexto de memoria local do processo (construtor)
 PageTable::PageTable(MemoryManager* memMgr, ProcessData* proc) 

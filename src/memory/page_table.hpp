@@ -5,7 +5,7 @@
 #include <vector>
 
 class MemoryManager;
-class Process;
+struct ProcessData;
 
 // Representa o no da lista ligada
 struct FrameNode {
