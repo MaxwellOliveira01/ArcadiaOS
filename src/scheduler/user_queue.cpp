@@ -30,7 +30,6 @@ ProcessData UserQueue::dequeue() {
 }
 
 bool UserQueue::enqueue(ProcessData& p) {
-    // Cada fila representa uma prioridade. Todos os processos de uma mesma fila tem mesma prioridade.
     bool isQueued = false;
     switch (p.priority) {
         case 1:
@@ -55,7 +54,6 @@ bool UserQueue::enqueue(ProcessData& p) {
             isQueued = true;
             break;
     }
-    //orderQueues();
     return isQueued;
 }
 
@@ -68,7 +66,6 @@ int UserQueue::size() {
 }
 
 void UserQueue::checkWaitingTime(const int& maxWaitingTime) {
-    // Verifica se o tempo de espera de um processo é igual ou maior que o maxWaitingTime
     for (auto* queuesProcess : {&high_priority_queue, &medium_priority_queue, &low_priority_queue}) {
         for (auto& p : *queuesProcess) {
             if (p.waitingTime >= maxWaitingTime) {

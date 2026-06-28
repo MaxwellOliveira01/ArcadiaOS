@@ -23,17 +23,18 @@ public:
     
     // Adiciona um novo processo na fila especificada
     // priority: 0 (alta), 1 (média), 2 (baixa)
-    // Para novos processos, use priority = 0
-    // Para realimentação, o dispatcher incrementa priority e chama da fila apropriada
     bool enqueue(ProcessData& p);
     
     // Remove e retorna o processo de maior prioridade entre todas as filas
     ProcessData dequeue();
 
+    // Retorna se as filas estão vazias
     bool isEmpty();
 
+    // Retorna o tamanho total das filas de usuário
     int size();
 
+    // Verifica se um processo está esperando muito tempo para ser escalonado e aplica realimentação se necessário
     void checkWaitingTime(const int& maxWaitingTime);
 
 };
