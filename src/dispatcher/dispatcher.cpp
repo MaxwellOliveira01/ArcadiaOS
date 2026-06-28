@@ -53,7 +53,7 @@ std::vector<ProcessData> Dispatcher::initProcess (std::vector<ProcessData>* proc
 bool Dispatcher::checkPendingProcesses(std::vector<ProcessData>* processes, const int currentClock){
     // Verifica se ainda existe processo pendente.
     for (const auto& process : *processes) {
-        if (process.initTime >= currentClock) {
+        if (process.initTime > currentClock) {
             return true; // There are pending processes
         }
     }
