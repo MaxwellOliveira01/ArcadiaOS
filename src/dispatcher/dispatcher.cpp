@@ -26,14 +26,15 @@ std::string Dispatcher::toString(const ProcessData& process) const {
     }
 
     output += "   Memory Reference: ";
-    for (const auto& ref : process.memoryReferences) {
-        output += std::to_string(ref) + ", ";
-    }
-    // Remove the trailing comma and space
-    if (!output.empty()) {
+    if((int)process.memoryReferences.size() == 0) {
+        for (const auto& ref : process.memoryReferences) {
+           output += std::to_string(ref) + ", ";
+        }
+        // Remove the trailing comma and space
         output.pop_back();
         output.pop_back();
     }
+
     return output + "\n";
 }
 
