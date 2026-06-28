@@ -55,7 +55,7 @@ namespace {
 
 namespace InputParser {
 
-    std::vector<ProcessData> parseProcesses(std::string& filename) {
+    std::vector<ProcessData> parseProcesses(const std::string& filename) {
         std::ifstream in = openOrThrow(filename);
         std::vector<ProcessData> processes;
         std::string line;
@@ -92,7 +92,7 @@ namespace InputParser {
         return processes;
     }
     
-    std::pair<FileSystemInit, std::vector<FileOperation>> parseFiles(std::string& filename) {
+    std::pair<FileSystemInit, std::vector<FileOperation>> parseFiles(const std::string& filename) {
         std::ifstream in = openOrThrow(filename);
         FileSystemInit init;
 
@@ -153,7 +153,7 @@ namespace InputParser {
 
     }
     
-    std::vector<std::vector<int>> parseStrings(std::string& filename) {
+    std::vector<std::vector<int>> parseStrings(const std::string& filename) {
         std::ifstream in = openOrThrow(filename);
         std::vector<std::vector<int>> all;
         std::string line;

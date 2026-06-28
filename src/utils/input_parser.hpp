@@ -10,11 +10,11 @@
 
 namespace InputParser {
     
-    std::vector<ProcessData> parseProcesses(std::string& filename);
+    std::vector<ProcessData> parseProcesses(const std::string& filename);
     
-    std::pair<FileSystemInit, std::vector<FileOperation>> parseFiles(std::string& filename);
+    std::pair<FileSystemInit, std::vector<FileOperation>> parseFiles(const std::string& filename);
     
-    std::vector<std::vector<int>> parseStrings(std::string& filename);
+    std::vector<std::vector<int>> parseStrings(const std::string& filename);
 }
 
 #endif

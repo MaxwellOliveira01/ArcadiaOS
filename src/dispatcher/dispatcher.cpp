@@ -26,7 +26,7 @@ std::string Dispatcher::toString(const ProcessData& process) const {
     }
 
     output += "   Memory Reference: ";
-    if((int)process.memoryReferences.size() == 0) {
+    if((int)process.memoryReferences.size() != 0) {
         for (const auto& ref : process.memoryReferences) {
            output += std::to_string(ref) + ", ";
         }
