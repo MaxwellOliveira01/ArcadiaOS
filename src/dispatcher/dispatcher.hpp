@@ -26,8 +26,6 @@ class Dispatcher {
     public:
         Dispatcher();
 
-        ProcessData createProcessFromInput(const std::vector<int>& inputData);
-
         std::string toString(const ProcessData& process) const;
 
         std::vector<ProcessData> initProcess (std::vector<ProcessData>* processes, const int currentClock);

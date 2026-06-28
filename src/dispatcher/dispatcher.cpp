@@ -7,37 +7,6 @@
 
 Dispatcher::Dispatcher() {}
 
-ProcessData Dispatcher::createProcessFromInput(const std::vector<int>& inputData) {
-    if (inputData.size() != 8) {
-        throw std::invalid_argument("Parametros invalidos.");
-    }
-
-    ProcessData process;
-    // Cria o processo com os dados base
-    process.pid = nextPid;
-    nextPid++;
-
-    process.initTime = inputData[0];
-
-    // Checa se a prioridade do processo não é menor que 0
-    if (inputData[1] < 0){
-        throw std::invalid_argument("Prioridade deve ser um numero inteiro positivo.");
-    }    
-    process.priority = inputData[1];
-    process.cpuTime = inputData[2];
-    process.workingSetSize = inputData[3];
-    process.requiresPrinter = inputData[4];
-    process.requiresScanner = inputData[5];
-    process.requiresModem = inputData[6];
-    process.requiresSata = inputData[7];
-
-    // Mostra os dados do processo criados.
-    std::string string_process = toString(process);
-    std::cout << string_process << std::endl;
-    
-    return process;
-}
-
 std::string Dispatcher::toString(const ProcessData& process) const {
     std::string output = "dispatcher =>\n"
             "   PID: " + std::to_string(process.pid) + "\n" +
