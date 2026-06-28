@@ -62,6 +62,7 @@ int main(int argc, char* argv[]) {
     }
 
     FileSystem fs(fsInit, processes);
+    ResourceManager resourceManager;
     std::unordered_map<int, PageTable> pageTables;
 
     // ----------------- ÁREA DE EXECUÇÃO ----------------- //
@@ -94,6 +95,13 @@ int main(int argc, char* argv[]) {
             }
 
             currentProcess = scheduler.getProcess();
+
+            // Tenta alocar os recursos que vai precisar
+            if(!currentProcess->realTime && !resourceManager.tryAllocate(*currentProcess)) {
+                scheduler.feedbackProcess(*currentProcess);
+                currentProcess = nullptr;
+                continue;
+            }
 
             // debug
             std::cout << "Process " << currentProcess->pid << " =>\n";
@@ -202,8 +210,11 @@ int main(int argc, char* argv[]) {
 
         if(currentProcess != nullptr) {
             if (currentProcess->executedTime >= currentProcess->cpuTime && currentProcess->diskOperations.size() == 0 && currentProcess->memoryReferences.size() == 0) {
-                    // Processo terminou, libera recursos e remove da fila
+                // Processo terminou, libera recursos e remove da fila
                 std::cout << "  Process " << currentProcess->pid << " has completed execution." << std::endl;
+                if(!currentProcess->realTime) {
+                    resourceManager.release(*currentProcess);
+                }
                 currentProcess = nullptr;
             }
             
