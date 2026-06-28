@@ -13,14 +13,18 @@ void Scheduler::orderProcesses() {
 void Scheduler::scaleProcess(std::vector<ProcessData>& processes) {
     globalQueue.insert(globalQueue.end(), processes.begin(), processes.end());
     orderProcesses();
-
+    
     // Admite os processos na fila apropriada
-    for (auto& process : globalQueue) {
-        if (admit(process)) {
+    auto it = globalQueue.begin();
+    while(it != globalQueue.end()) {
+        if(admit(*it)) {
             // Se admitido, remove da fila global
-            removeGlobalProcess(process);
+            it = globalQueue.erase(it);
+        } else {
+            it = next(it);
         }
     }
+
 }
 
 bool Scheduler::admit(ProcessData& process) {
