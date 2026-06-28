@@ -23,22 +23,30 @@ class Scheduler {
         Scheduler();
 
         // Entrada do escalonador
+        // Escalona os processos em suas respectivas filas
         void scaleProcess(std::vector<ProcessData>& processes);
 
         void orderProcesses();
 
+        // Tenta escalonar os processos na fila de tempo real ou de usuário.
         bool admit(ProcessData& process);
 
+        // Retorna o processo de maior priodiade
         ProcessData* getProcess();
 
+        // Tenta realocar o processo da fila global em uma fila específica.
         void feedbackProcess(ProcessData& process);
 
+        // Verifica se todas as filas estão vazias
         bool isEmpty();
 
+        // Imprime o estado atual das filas
         void printQueues();
 
+        // Remove um processo da fila global
         void removeGlobalProcess(ProcessData& process);
 
+        // Verifica o tempo de espera de cada processo na fila de usuário e aplica realimentação se necessário
         void checkWaitingTime();
 };
 

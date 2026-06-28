@@ -3,15 +3,14 @@
 
 Scheduler::Scheduler() {}
 
+// Ordena a fila global de processos por prioridade (menor prioridade primeiro)
 void Scheduler::orderProcesses() {
-    // Ordena a fila global de processos por prioridade (menor prioridade primeiro)
     std::sort(globalQueue.begin(), globalQueue.end(), [](const ProcessData& a, const ProcessData& b) {
         return a.priority < b.priority; // Menor prioridade primeiro
     });
 }
 
 void Scheduler::scaleProcess(std::vector<ProcessData>& processes) {
-    // Adiciona todos os processos à fila global e ordena por prioridade
     globalQueue.insert(globalQueue.end(), processes.begin(), processes.end());
     orderProcesses();
 
@@ -24,9 +23,7 @@ void Scheduler::scaleProcess(std::vector<ProcessData>& processes) {
     }
 }
 
-
 bool Scheduler::admit(ProcessData& process) {
-    // Admite o processo na fila apropriada
     if (process.realTime) {
         return realTimeQueue.enqueue(process);
     } else {
@@ -35,7 +32,6 @@ bool Scheduler::admit(ProcessData& process) {
 }
 
 ProcessData* Scheduler::getProcess() {
-    // Retorna o próximo processo a ser executado
     static ProcessData process;
     ProcessData *globalProcess = globalQueue.empty() ? nullptr : &globalQueue.front();
     
@@ -57,7 +53,6 @@ ProcessData* Scheduler::getProcess() {
 }
 
 void Scheduler::feedbackProcess(ProcessData& process) {
-    // Realimenta o processo de volta à fila apropriada
     if (!admit(process)) {
         globalQueue.push_back(process); // Se não puder admitir, mantém na fila global
     }
@@ -66,6 +61,7 @@ void Scheduler::feedbackProcess(ProcessData& process) {
 bool Scheduler::isEmpty() {
     return globalQueue.empty() && realTimeQueue.isEmpty() && userQueue.isEmpty();
 }
+
 
 void Scheduler::printQueues() {
     std::cout << "Global Queue: " << globalQueue.size() << " processes\n";
