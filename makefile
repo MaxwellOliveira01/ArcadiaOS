@@ -15,6 +15,8 @@ SRCS := $(SRC_DIR)/main.cpp \
 	$(SRC_DIR)/process/process.cpp \
 	$(SRC_DIR)/filesystem/disk.cpp \
 	$(SRC_DIR)/filesystem/file_system.cpp \
+	$(SRC_DIR)/memory/memory_manager.cpp \
+	$(SRC_DIR)/memory/page_table.cpp \
 
 	
 OBJS := $(SRCS:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
