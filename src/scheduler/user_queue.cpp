@@ -66,22 +66,32 @@ int UserQueue::size() {
 }
 
 void UserQueue::checkWaitingTime(const int& maxWaitingTime) {
-    for (auto* queuesProcess : {&high_priority_queue, &medium_priority_queue, &low_priority_queue}) {
-        for (auto& p : *queuesProcess) {
-            if (p.waitingTime >= maxWaitingTime) {
-                // Realimenta o processo para a fila seguinte de m
-                ProcessManipulator::aging(&p);
-                ProcessManipulator::resetWaitingTime(&p); // Reseta o tempo de espera após a realimentação
-                
-                // Remove o processo da fila atual
-                queuesProcess->erase(std::remove_if(queuesProcess->begin(), queuesProcess->end(),
-                    [&p](const ProcessData& process) { return process.pid == p.pid; }),
-                    queuesProcess->end());
 
-                // Adiciona o processo na fila apropriada
-                enqueue(p);
+    std::vector<ProcessData> toReinsert;
+    std::deque<ProcessData>* queues[] = {
+        &high_priority_queue,
+        &medium_priority_queue,
+        &low_priority_queue
+    };
+
+    for(auto &q : queues) {
+        auto it = q->begin();
+        while(it != q->end()) {
+            if(it->waitingTime >= maxWaitingTime) {
+                // Realimenta o processo para a fila seguinte de m
+                ProcessManipulator::aging(&*it);
+                ProcessManipulator::resetWaitingTime(&*it); // Reseta o tempo de espera após a realimentação
+                toReinsert.push_back(*it);
+                it = q->erase(it);
+            } else {
+                ProcessManipulator::incrementWaitingTime(&*it);
+                it = next(it);
             }
-            else ProcessManipulator::incrementWaitingTime(&p); // Incrementa o tempo de espera do processo
         }
+    }
+
+    for(auto &p : toReinsert) {
+        // Adiciona o processo na fila apropriada
+        enqueue(p);
     }
 }
