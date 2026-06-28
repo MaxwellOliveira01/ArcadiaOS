@@ -53,8 +53,8 @@ int main(int argc, char* argv[]) {
     std::cout << "Processos (" << processes.size() << "):\n";
     for(const auto &p : processes) {
         // Passa as operações de disco e referências de memória para os processos
-        ProcessManipulator::setDiskOperations(const_cast<ProcessData*>(&p), std::move(fileOps));
-        ProcessManipulator::setMemoryReferences(const_cast<ProcessData*>(&p), std::move(pageRefs[p.pid]));
+        ProcessManipulator::setDiskOperations(const_cast<ProcessData*>(&p), fileOps);
+        ProcessManipulator::setMemoryReferences(const_cast<ProcessData*>(&p), pageRefs[p.pid]);
 
         // Print dos processos criados
         output_string = dispatcher.toString(p);

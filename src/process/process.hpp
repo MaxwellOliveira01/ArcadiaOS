@@ -33,10 +33,10 @@ class ProcessManipulator {
         static void aging(ProcessData* process);
 
         // Define as operações de disco que o processo deverá realizar.
-        static void setDiskOperations(ProcessData* process, const std::vector<FileOperation>&& ops);
+        static void setDiskOperations(ProcessData* process, const std::vector<FileOperation>& ops);
 
         // Define as referências de memória que o processo deverá referenciar.
-        static void setMemoryReferences(ProcessData* process, const std::vector<int>&& refs);
+        static void setMemoryReferences(ProcessData* process, const std::vector<int>& refs);
 
         // Incrementa o tempo de espera do processo na fila.
         static void incrementWaitingTime(ProcessData* process);
