@@ -1,4 +1,5 @@
 #include "process.hpp"
+#include <algorithm>
 
 void ProcessManipulator::aging(ProcessData* process) {
     process->priority = std::max(process->priority - 1, 1);
