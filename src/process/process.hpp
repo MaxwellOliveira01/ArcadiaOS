@@ -15,12 +15,10 @@ struct ProcessData {
     bool requiresModem;
     bool requiresSata;
     
-    // Variavel de controle para o escalonador
-    int queueLevel = 0;
-    
     int executedTime = 0; // Tempo de CPU já utilizado
     
     bool realTime = false;
+    int waitingTime = 0; // Tempo de espera na fila
 
     // Operações no disco
     std::vector<FileOperation> diskOperations;
@@ -39,6 +37,14 @@ class ProcessManipulator {
         static void setDiskOperations(ProcessData* process, const std::vector<FileOperation>&& ops);
 
         static void setMemoryReferences(ProcessData* process, const std::vector<int>&& refs);
+
+        static void incrementWaitingTime(ProcessData* process) {
+            process->waitingTime++;
+        }
+
+        static void resetWaitingTime(ProcessData* process) {
+            process->waitingTime = 0;
+        }
 };
 
 #endif
