@@ -61,9 +61,10 @@ int main(int argc, char* argv[]) {
         std::cout << output_string;
     }
 
+    FileSystem fs(fsInit, processes);
 
     // ----------------- ÁREA DE EXECUÇÃO ----------------- //
-    while(true ) {
+    while(true) {
         clock++; // Incrementa o relógio do sistema
         
         // if debug
@@ -117,11 +118,10 @@ int main(int argc, char* argv[]) {
         
 
         // ------ > VERIFICA SE TEM QUE FAZER OPERAÇÕES NO DISCO < ------ //
-        else if (currentProcess->diskOperations.size() > 0) {
+        else if ((int)currentProcess->diskOperations.size() > 0) {
             systemOp++;
             // Executa a operação de disco
             FileOperation op = currentProcess->diskOperations.front();
-            FileSystem fs(fsInit, processes);
             currentProcess->diskOperations.erase(currentProcess->diskOperations.begin());
 
             fileSystemResult = fs.execute(op);
