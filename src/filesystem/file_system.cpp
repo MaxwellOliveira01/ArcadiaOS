@@ -1,15 +1,15 @@
 #include "file_system.hpp"
 #include "../process/process.hpp"
+#include <stdexcept>
 
 FileSystem::FileSystem(FileSystemInit& init, std::vector<ProcessData>& processes): 
     diskUnit(init.totalBlocks), processes(processes) {
 
     for(auto &f : init.existingFiles) {
-        if(diskUnit.placeExisting(f.name, f.startBlock, f.numBlocks)) {
-            filesByName[f.name] = f;
-        } else {
-            // nao consegui colocar um cara do inicio, erro? -> input invalido
+        if(!diskUnit.placeExisting(f.name, f.startBlock, f.numBlocks)) {
+            throw std::runtime_error("arquivo invalido: " + f.name);
         }
+        filesByName[f.name] = f;
     }
 };
 
