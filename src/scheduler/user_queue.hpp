@@ -16,15 +16,15 @@ private:
     std::deque<ProcessData> medium_priority_queue;
     std::deque<ProcessData> low_priority_queue;
 
-    void orderQueues();
+    const long unsigned int MAX_QUEUE_SIZE = 1000; // Tamanho máximo da fila de processos de usuário
 
 public:
     UserQueue();
     
     // Adiciona um novo processo na fila especificada
-    // queueLevel: 0 (alta), 1 (média), 2 (baixa)
-    // Para novos processos, use queueLevel = 0
-    // Para realimentação, o dispatcher incrementa priority e chama com queueLevel apropriado
+    // priority: 0 (alta), 1 (média), 2 (baixa)
+    // Para novos processos, use priority = 0
+    // Para realimentação, o dispatcher incrementa priority e chama da fila apropriada
     bool enqueue(ProcessData& p);
     
     // Remove e retorna o processo de maior prioridade entre todas as filas
@@ -33,6 +33,8 @@ public:
     bool isEmpty();
 
     int size();
+
+    void checkWaitingTime(const int& maxWaitingTime);
 
 };
 

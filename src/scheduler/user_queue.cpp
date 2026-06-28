@@ -6,45 +6,56 @@
 UserQueue::UserQueue() {}
 
 ProcessData UserQueue::dequeue() {
+    ProcessData process;
     if (!high_priority_queue.empty()) {
-        ProcessData process = high_priority_queue.front();
+        process = high_priority_queue.front();
         high_priority_queue.pop_front();
-        process.queueLevel = 1;
-        return process;
+        process.priority = 2;
+        
     } else if (!medium_priority_queue.empty()) {
-        ProcessData process = medium_priority_queue.front();
+        process = medium_priority_queue.front();
         medium_priority_queue.pop_front();
-        process.queueLevel = 2;
-        return process;
+        process.priority = 3;
+        
     } else if (!low_priority_queue.empty()) {
-        ProcessData process = low_priority_queue.front();
+        process = low_priority_queue.front();
         low_priority_queue.pop_front();
-        process.queueLevel = 2; // Mantém o nível da fila baixa
-        return process;
+        process.priority = 3; // Mantém o nível da fila baixa
+        
     } else {
         throw std::runtime_error("Todas as filas de usuário estão vazias");
     }
+    ProcessManipulator::resetWaitingTime(&process); // Reseta o tempo de espera após a realimentação
+    return process;
 }
 
 bool UserQueue::enqueue(ProcessData& p) {
+    // Cada fila representa uma prioridade. Todos os processos de uma mesma fila tem mesma prioridade.
     bool isQueued = false;
-    switch (p.queueLevel) {
-        case 0:
+    switch (p.priority) {
+        case 1:
+            if (high_priority_queue.size() >= MAX_QUEUE_SIZE) {
+                return false; // Fila cheia
+            }
             high_priority_queue.push_back(p);
             isQueued = true;
             break;
-        case 1:
+        case 2:
+            if (medium_priority_queue.size() >= MAX_QUEUE_SIZE) {
+                return false; // Fila cheia
+            }
             medium_priority_queue.push_back(p);
             isQueued = true;
             break;
-        case 2:
+        default:
+            if (low_priority_queue.size() >= MAX_QUEUE_SIZE) {
+                return false; // Fila cheia
+            }
             low_priority_queue.push_back(p);
             isQueued = true;
             break;
-        default:
-            return false;  // Nível de fila inválido
     }
-    orderQueues();
+    //orderQueues();
     return isQueued;
 }
 
@@ -56,12 +67,24 @@ int UserQueue::size() {
     return high_priority_queue.size() + medium_priority_queue.size() + low_priority_queue.size();
 }
 
-void UserQueue::orderQueues() {
-    auto compare = [](const ProcessData& a, const ProcessData& b) {
-        return a.priority > b.priority; // Maior prioridade primeiro
-    };
+void UserQueue::checkWaitingTime(const int& maxWaitingTime) {
+    // Verifica se o tempo de espera de um processo é igual ou maior que o maxWaitingTime
+    for (auto* queuesProcess : {&high_priority_queue, &medium_priority_queue, &low_priority_queue}) {
+        for (auto& p : *queuesProcess) {
+            if (p.waitingTime >= maxWaitingTime) {
+                // Realimenta o processo para a fila seguinte de m
+                ProcessManipulator::aging(&p);
+                ProcessManipulator::resetWaitingTime(&p); // Reseta o tempo de espera após a realimentação
+                
+                // Remove o processo da fila atual
+                queuesProcess->erase(std::remove_if(queuesProcess->begin(), queuesProcess->end(),
+                    [&p](const ProcessData& process) { return process.pid == p.pid; }),
+                    queuesProcess->end());
 
-    std::sort(high_priority_queue.begin(), high_priority_queue.end(), compare);
-    std::sort(medium_priority_queue.begin(), medium_priority_queue.end(), compare);
-    std::sort(low_priority_queue.begin(), low_priority_queue.end(), compare);
+                // Adiciona o processo na fila apropriada
+                enqueue(p);
+            }
+            else ProcessManipulator::incrementWaitingTime(&p); // Incrementa o tempo de espera do processo
+        }
+    }
 }
