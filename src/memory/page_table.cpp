@@ -9,7 +9,7 @@ PageTable::PageTable(MemoryManager* memMgr, ProcessData* proc)
     activePages = 1;
     offSet = 0;
 
-    if (process->realTime) {
+    if (!process->realTime) {
         offSet = 8; // Processos de usuario começam no frame fisico 8
     }
 
