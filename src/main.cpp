@@ -11,6 +11,9 @@
 //Scheduler
 #include "scheduler/scheduler.hpp"
 
+// Memory Manager
+#include "memory/memory_manager.hpp"
+
 using namespace std;
 
 int main(int argc, char* argv[]) {
@@ -36,9 +39,15 @@ int main(int argc, char* argv[]) {
     auto [fsInit, fileOps] = InputParser::parseFiles(filesFile);
 
 
-    // Dispatcher: Cria processos
-    Dispatcher dispatcher;
+    // Declaração de variáveis
+    Dispatcher dispatcher; // Gerenciador de processos
+    Scheduler scheduler; // Escalonador de processos
+    OperationResult fileSystemResult; // Resultado da operação do sistema de arquivos
+    MemoryManager memoryManager; // Gerenciador de memória
+    std::vector<ProcessData> readyProcesses; // Processos prontos para execução
+    ProcessData* currentProcess = nullptr; // Processo em execução
     std::string output_string;
+    int timeUsed, clock = 0, systemOp = 0;
     
     
     std::cout << "Processos (" << processes.size() << "):\n";
@@ -51,17 +60,6 @@ int main(int argc, char* argv[]) {
         output_string = dispatcher.toString(p);
         std::cout << output_string;
     }
-
-    // Escalonar os processos criados.
-    Scheduler scheduler;
-    std::vector<ProcessData> readyProcesses;
-    ProcessData* currentProcess = nullptr;
-
-    /*// if debug
-    std::cout << "\n\n\nFila de Processos:\n";
-    scheduler.printQueues();
-    */
-    int timeUsed, clock = 0;
 
 
     // ----------------- ÁREA DE EXECUÇÃO ----------------- //
@@ -83,7 +81,7 @@ int main(int argc, char* argv[]) {
         }
 
         if (currentProcess == nullptr) {
-            if (processes.empty() && scheduler.isEmpty()) {
+            if (!dispatcher.checkPendingProcesses(&processes, clock) && scheduler.isEmpty()) {
                 std::cout << "Todos os processos foram executados.\n";
                 break;
             }
@@ -108,7 +106,7 @@ int main(int argc, char* argv[]) {
 
         // -------------------- EXECUÇÃO DO PROCESSO -------------------- //
 
-        // VERIFICA SE TEM QUE EXERCUTAR INSTRUÇÕES
+        // ------ > VERIFICA SE TEM QUE EXERCUTAR INSTRUÇÕES < ------ //
         if (currentProcess->executedTime < currentProcess->cpuTime) {
             currentProcess->executedTime++;
 
@@ -117,20 +115,31 @@ int main(int argc, char* argv[]) {
 
         }
         
-        // VERIFICA SE TEM QUE FAZER OPERAÇÕES NO DISCO
+
+        // ------ > VERIFICA SE TEM QUE FAZER OPERAÇÕES NO DISCO < ------ //
         else if (currentProcess->diskOperations.size() > 0) {
+            systemOp++;
             // Executa a operação de disco
             FileOperation op = currentProcess->diskOperations.front();
+            FileSystem fs(fsInit, processes);
             currentProcess->diskOperations.erase(currentProcess->diskOperations.begin());
-            
-            // debug: Print the disk operation being executed
-            std::cout << "  Process " << currentProcess->pid << " executed disk operation: "
-                    << (op.opCode == 0 ? "create" : "delete") << " file: "
-                    << op.fileName << " blocks: " << op.numBlocks << std::endl;
 
+            fileSystemResult = fs.execute(op);
+
+            // Print do resultado da operação de disco
+            if (fileSystemResult.success) {
+                std::cout << "  \033[1mOperação " << systemOp << " => Sucesso\033[0m\n";
+                std::cout << "  Processo " << currentProcess->pid << " "
+                    << (op.opCode == 0 ? "criou" : "deletou") << " o arquivo: "
+                    << op.fileName << (op.opCode == 0 ? "(criou " + std::to_string(op.numBlocks) + " blocos)" : "") << std::endl;
+            } else {
+                std::cout << "  \033[1mOperação " << systemOp << " => Falha\033[0m\n";
+                std::cout << "  Processo " << currentProcess->pid << " :" << fileSystemResult.message << std::endl;
+            }
         } 
+
         
-        // VERIFICA SE TEM QUE FAZER REFERÊNCIAS DE MEMÓRIA
+        // ------ > VERIFICA SE TEM QUE FAZER REFERÊNCIAS DE MEMÓRIA < ------ //
         else if (currentProcess->memoryReferences.size() > 0) {
             // Executa a referência de memória
             int ref = currentProcess->memoryReferences.front();
@@ -140,7 +149,38 @@ int main(int argc, char* argv[]) {
             std::cout << "  Process " << currentProcess->pid << " executed memory reference: "
                     << ref << std::endl;
 
-        } else {
+        } 
+        
+        // -----> OPERAÇÕES I/O DE RECURSOS <----- //
+        // Impressora
+        else if (currentProcess->requiresPrinter) {
+            // Simula a operação de I/O da impressora
+            std::cout << "  Process " << currentProcess->pid << " is using the printer." << std::endl;
+            currentProcess->requiresPrinter = false; // Marca que a operação foi concluída
+        }
+
+        // Scanner
+        else if (currentProcess->requiresScanner) {
+            // Simula a operação de I/O do scanner
+            std::cout << "  Process " << currentProcess->pid << " is using the scanner." << std::endl;
+            currentProcess->requiresScanner = false; // Marca que a operação foi concluída
+        }
+
+        // Modem
+        else if (currentProcess->requiresModem) {
+            // Simula a operação de I/O do modem
+            std::cout << "  Process " << currentProcess->pid << " is using the modem." << std::endl;
+            currentProcess->requiresModem = false; // Marca que a operação foi concluída
+        }
+
+        // Drivers 
+        else if (currentProcess->requiresSata) {
+            // Simula a operação de I/O dos drivers
+            std::cout << "  Process " << currentProcess->pid << " is using the drivers." << std::endl;
+            currentProcess->requiresSata = false; // Marca que a operação foi concluída
+        }
+
+        else {
             // Nenhuma operação restante, o processo terminou
             std::cout << "  Process " << currentProcess->pid << " has completed execution." << std::endl;
             currentProcess = nullptr;
@@ -163,22 +203,20 @@ int main(int argc, char* argv[]) {
             currentProcess = nullptr;
             
         }
-
-        /*// debug
-        std::cout << "\n\n\nFila de Processos:\n";
-        scheduler.printQueues();
-        std::cout << "\n\n\n";
-        */
-
-
     }
 
-    // Mostra o Mapa de ocupação do disco
 
-    // Mostra o Número de falta de páginas
+    /* ----- > Operações finais < ----- */
 
-    // Encerra Execução
+    // Mostra o disco
+    std::cout << "\n\033[1mMapa de ocupação do disco:\033[0m" << std::endl;
 
+    // Mostra o numero de falta de páginas
+    std::cout << "\n\033[1mNúmero de faltas de páginas por processo:\033[0m" << std::endl;
+
+
+
+/*     
     // if debug
 
     std::cout << "Disco: " << fsInit.totalBlocks << " blocos, "
@@ -223,6 +261,6 @@ int main(int argc, char* argv[]) {
 
     //end if debug
 
-
+ */
     return 0;
 }
