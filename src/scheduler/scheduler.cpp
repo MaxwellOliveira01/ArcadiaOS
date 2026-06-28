@@ -57,6 +57,9 @@ ProcessData* Scheduler::getProcess() {
 }
 
 void Scheduler::feedbackProcess(ProcessData& process) {
+    
+    process.priority = std::min(process.priority + 1, 3);
+
     if (!admit(process)) {
         globalQueue.push_back(process); // Se não puder admitir, mantém na fila global
     }

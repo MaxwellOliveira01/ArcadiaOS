@@ -10,17 +10,14 @@ ProcessData UserQueue::dequeue() {
     if (!high_priority_queue.empty()) {
         process = high_priority_queue.front();
         high_priority_queue.pop_front();
-        process.priority = 2;
         
     } else if (!medium_priority_queue.empty()) {
         process = medium_priority_queue.front();
         medium_priority_queue.pop_front();
-        process.priority = 3;
         
     } else if (!low_priority_queue.empty()) {
         process = low_priority_queue.front();
         low_priority_queue.pop_front();
-        process.priority = 3; // Mantém o nível da fila baixa
         
     } else {
         throw std::runtime_error("Todas as filas de usuário estão vazias");
