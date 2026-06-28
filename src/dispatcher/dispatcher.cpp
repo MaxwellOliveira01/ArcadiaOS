@@ -4,7 +4,6 @@
 
 #include "../process/process.hpp"
 
-
 Dispatcher::Dispatcher() {}
 
 std::string Dispatcher::toString(const ProcessData& process) const {
@@ -43,14 +42,19 @@ std::vector<ProcessData> Dispatcher::initProcess (std::vector<ProcessData>* proc
     for (auto& process : *processes) {
         if (process.initTime == currentClock) {
             readyProcesses.push_back(process);
-
-            // Descarta o processo da lista de processos
-            processes->erase(std::remove_if(processes->begin(), processes->end(),
-                [&process](const ProcessData& p) { return p.pid == process.pid; }),
-                processes->end());
         }
     }
 
     // Return a default-constructed ProcessData if no process is found
     return readyProcesses;
+}
+
+bool Dispatcher::checkPendingProcesses(std::vector<ProcessData>* processes, const int currentClock){
+    // Verifica se ainda existe processo pendente.
+    for (const auto& process : *processes) {
+        if (process.initTime >= currentClock) {
+            return true; // There are pending processes
+        }
+    }
+    return false; // No pending processes
 }

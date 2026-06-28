@@ -26,9 +26,14 @@ class Dispatcher {
     public:
         Dispatcher();
 
+        // Retorna uma representação em string do processo.
         std::string toString(const ProcessData& process) const;
 
+        // Verifica se existem processos para serem inicializados.
         std::vector<ProcessData> initProcess (std::vector<ProcessData>* processes, const int currentClock);
+
+        // Verifica se ainda existe processo pendente para ser inicializado.
+        bool checkPendingProcesses(std::vector<ProcessData>* processes, const int currentClock);
 };
 
 #endif
