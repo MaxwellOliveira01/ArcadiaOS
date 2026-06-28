@@ -29,22 +29,20 @@ struct ProcessData {
 
 class ProcessManipulator {
     public:
-        static void aging(ProcessData* process) {
-            // Reduz a prioridade do processo para evitar starvation
-            process->priority = std::max(process->priority - 1, 1);
-        }
+        // Reduz a prioridade do processo para evitar starvation
+        static void aging(ProcessData* process);
 
+        // Define as operações de disco que o processo deverá realizar.
         static void setDiskOperations(ProcessData* process, const std::vector<FileOperation>&& ops);
 
+        // Define as referências de memória que o processo deverá referenciar.
         static void setMemoryReferences(ProcessData* process, const std::vector<int>&& refs);
 
-        static void incrementWaitingTime(ProcessData* process) {
-            process->waitingTime++;
-        }
+        // Incrementa o tempo de espera do processo na fila.
+        static void incrementWaitingTime(ProcessData* process);
 
-        static void resetWaitingTime(ProcessData* process) {
-            process->waitingTime = 0;
-        }
+        // Reseta o tempo de espera do processo na fila.
+        static void resetWaitingTime(ProcessData* process);
 };
 
 #endif
