@@ -5,18 +5,14 @@
 #include "../process/process.hpp"
 
 class RealTimeQueue {
-private:
-    std::deque<ProcessData> queue;
-    static const int MAX_PROCESSES = 1000;
-
 public:
     RealTimeQueue();
     
     // Adiciona um processo no final da fila (FIFO)
-    bool enqueue(const ProcessData& process);
+    bool enqueue(ProcessData* process);
     
     // Remove e retorna o primeiro processo da fila
-    ProcessData dequeue();
+    ProcessData* dequeue();
     
     // Verifica se a fila está vazia
     bool isEmpty() const;
@@ -26,6 +22,11 @@ public:
     
     // Verifica se a fila atingiu o limite máximo (1000 processos)
     bool isFull() const;
+
+private:
+    std::deque<ProcessData*> queue;
+    static const int MAX_PROCESSES = 1000;
+
 };
 
 #endif

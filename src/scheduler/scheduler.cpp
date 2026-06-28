@@ -5,12 +5,12 @@ Scheduler::Scheduler() {}
 
 // Ordena a fila global de processos por prioridade (menor prioridade primeiro)
 void Scheduler::orderProcesses() {
-    std::sort(globalQueue.begin(), globalQueue.end(), [](const ProcessData& a, const ProcessData& b) {
-        return a.priority < b.priority; // Menor prioridade primeiro
+    std::sort(globalQueue.begin(), globalQueue.end(), [](const ProcessData* a, const ProcessData* b) {
+        return a->priority < b->priority; // Menor prioridade primeiro
     });
 }
 
-void Scheduler::scaleProcess(std::vector<ProcessData>& processes) {
+void Scheduler::scaleProcess(std::vector<ProcessData*>& processes) {
     globalQueue.insert(globalQueue.end(), processes.begin(), processes.end());
     orderProcesses();
     
@@ -27,8 +27,8 @@ void Scheduler::scaleProcess(std::vector<ProcessData>& processes) {
 
 }
 
-bool Scheduler::admit(ProcessData& process) {
-    if (process.realTime) {
+bool Scheduler::admit(ProcessData* process) {
+    if (process->realTime) {
         return realTimeQueue.enqueue(process);
     } else {
         return userQueue.enqueue(process);
@@ -36,8 +36,8 @@ bool Scheduler::admit(ProcessData& process) {
 }
 
 ProcessData* Scheduler::getProcess() {
-    static ProcessData process;
-    ProcessData *globalProcess = globalQueue.empty() ? nullptr : &globalQueue.front();
+    ProcessData* process = nullptr;
+    ProcessData* globalProcess = globalQueue.empty() ? nullptr : globalQueue.front();
     
     if (!realTimeQueue.isEmpty()) {
         process = realTimeQueue.dequeue();
@@ -47,18 +47,17 @@ ProcessData* Scheduler::getProcess() {
         throw std::runtime_error("Nenhum processo disponível para execução");
     }
 
-    if (globalProcess != nullptr) {
+    if (globalProcess != nullptr && admit(globalProcess)) {
         // Se houver um processo na fila global, tenta adiciona-lo à fila apropriada
-        if (admit(*globalProcess)) {
-            removeGlobalProcess(*globalProcess);
-        }
+        removeGlobalProcess(globalProcess);
     }
-    return &process;
+
+    return process;
 }
 
-void Scheduler::feedbackProcess(ProcessData& process) {
+void Scheduler::feedbackProcess(ProcessData* process) {
     
-    process.priority = std::min(process.priority + 1, 3);
+    process->priority = std::min(process->priority + 1, 3);
 
     if (!admit(process)) {
         globalQueue.push_back(process); // Se não puder admitir, mantém na fila global
@@ -76,10 +75,8 @@ void Scheduler::printQueues() {
     std::cout << "User Queue: " << userQueue.size() << " processes\n";
 }
 
-void Scheduler::removeGlobalProcess(ProcessData& process) {
-    auto it = std::find_if(globalQueue.begin(), globalQueue.end(), [&process](const ProcessData& p) {
-        return p.pid == process.pid;
-    });
+void Scheduler::removeGlobalProcess(ProcessData* process) {
+    auto it = std::find(globalQueue.begin(), globalQueue.end(), process);
     if (it != globalQueue.end()) {
         globalQueue.erase(it);
     }

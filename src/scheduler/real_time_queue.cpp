@@ -3,7 +3,7 @@
 
 RealTimeQueue::RealTimeQueue() {}
 
-bool RealTimeQueue::enqueue(const ProcessData& process) {
+bool RealTimeQueue::enqueue(ProcessData* process) {
     if (isFull()) {
         return false;
     }
@@ -11,11 +11,11 @@ bool RealTimeQueue::enqueue(const ProcessData& process) {
     return true;
 }
 
-ProcessData RealTimeQueue::dequeue() {
+ProcessData* RealTimeQueue::dequeue() {
     if (isEmpty()) {
         throw std::underflow_error("Fila vazia: nenhum processo disponivel para execucao");
     }
-    ProcessData process = queue.front();
+    ProcessData* process = queue.front();
     queue.pop_front();
     return process;
 }

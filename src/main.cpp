@@ -44,17 +44,17 @@ int main(int argc, char* argv[]) {
     Scheduler scheduler; // Escalonador de processos
     OperationResult fileSystemResult; // Resultado da operação do sistema de arquivos
     MemoryManager memoryManager; // Gerenciador de memória
-    std::vector<ProcessData> readyProcesses; // Processos prontos para execução
+    std::vector<ProcessData*> readyProcesses; // Processos prontos para execução
     ProcessData* currentProcess = nullptr; // Processo em execução
     std::string output_string;
     int timeUsed, clock = 0, systemOp = 0;
     
     
     std::cout << "Processos (" << processes.size() << "):\n";
-    for(const auto &p : processes) {
+    for(auto &p : processes) {
         // Passa as operações de disco e referências de memória para os processos
-        ProcessManipulator::setDiskOperations(const_cast<ProcessData*>(&p), fileOps);
-        ProcessManipulator::setMemoryReferences(const_cast<ProcessData*>(&p), pageRefs[p.pid]);
+        ProcessManipulator::setDiskOperations(&p, fileOps);
+        ProcessManipulator::setMemoryReferences(&p, pageRefs[p.pid]);
 
         // Print dos processos criados
         output_string = dispatcher.toString(p);
@@ -98,7 +98,7 @@ int main(int argc, char* argv[]) {
 
             // Tenta alocar os recursos que vai precisar
             if(!currentProcess->realTime && !resourceManager.tryAllocate(*currentProcess)) {
-                scheduler.feedbackProcess(*currentProcess);
+                scheduler.feedbackProcess(currentProcess);
                 currentProcess = nullptr;
                 continue;
             }
@@ -221,7 +221,7 @@ int main(int argc, char* argv[]) {
         
         if (currentProcess != nullptr && !currentProcess->realTime && timeUsed >= scheduler.QUANTUM_TIME) {
             // Se o processo de usuário atingiu o tempo de quantum, realimenta-o
-            scheduler.feedbackProcess(*currentProcess);
+            scheduler.feedbackProcess(currentProcess);
             currentProcess = nullptr;
             
         }

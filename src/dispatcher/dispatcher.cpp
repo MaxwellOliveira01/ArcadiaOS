@@ -38,15 +38,14 @@ std::string Dispatcher::toString(const ProcessData& process) const {
     return output + "\n";
 }
 
-std::vector<ProcessData> Dispatcher::initProcess (std::vector<ProcessData>* processes, const int currentClock) {
-    std::vector<ProcessData> readyProcesses = std::vector<ProcessData>();
+std::vector<ProcessData*> Dispatcher::initProcess (std::vector<ProcessData>* processes, const int currentClock) {
+    std::vector<ProcessData*> readyProcesses;
     for (auto& process : *processes) {
         if (process.initTime == currentClock) {
-            readyProcesses.push_back(process);
+            readyProcesses.push_back(&process);
         }
     }
 
-    // Return a default-constructed ProcessData if no process is found
     return readyProcesses;
 }
 

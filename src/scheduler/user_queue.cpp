@@ -5,8 +5,8 @@
 
 UserQueue::UserQueue() {}
 
-ProcessData UserQueue::dequeue() {
-    ProcessData process;
+ProcessData* UserQueue::dequeue() {
+    ProcessData* process;
     if (!high_priority_queue.empty()) {
         process = high_priority_queue.front();
         high_priority_queue.pop_front();
@@ -22,13 +22,13 @@ ProcessData UserQueue::dequeue() {
     } else {
         throw std::runtime_error("Todas as filas de usuário estão vazias");
     }
-    ProcessManipulator::resetWaitingTime(&process); // Reseta o tempo de espera após a realimentação
+    ProcessManipulator::resetWaitingTime(process); // Reseta o tempo de espera após a realimentação
     return process;
 }
 
-bool UserQueue::enqueue(ProcessData& p) {
+bool UserQueue::enqueue(ProcessData* p) {
     bool isQueued = false;
-    switch (p.priority) {
+    switch (p->priority) {
         case 1:
             if (high_priority_queue.size() >= MAX_QUEUE_SIZE) {
                 return false; // Fila cheia
@@ -64,8 +64,8 @@ int UserQueue::size() {
 
 void UserQueue::checkWaitingTime(const int& maxWaitingTime) {
 
-    std::vector<ProcessData> toReinsert;
-    std::deque<ProcessData>* queues[] = {
+    std::vector<ProcessData*> toReinsert;
+    std::deque<ProcessData*>* queues[] = {
         &high_priority_queue,
         &medium_priority_queue,
         &low_priority_queue
@@ -74,20 +74,21 @@ void UserQueue::checkWaitingTime(const int& maxWaitingTime) {
     for(auto &q : queues) {
         auto it = q->begin();
         while(it != q->end()) {
-            if(it->waitingTime >= maxWaitingTime) {
+            ProcessData* p = *it;
+            if(p->waitingTime >= maxWaitingTime) {
                 // Realimenta o processo para a fila seguinte de m
-                ProcessManipulator::aging(&*it);
-                ProcessManipulator::resetWaitingTime(&*it); // Reseta o tempo de espera após a realimentação
-                toReinsert.push_back(*it);
+                ProcessManipulator::aging(p);
+                ProcessManipulator::resetWaitingTime(p); // Reseta o tempo de espera após a realimentação
+                toReinsert.push_back(p);
                 it = q->erase(it);
             } else {
-                ProcessManipulator::incrementWaitingTime(&*it);
+                ProcessManipulator::incrementWaitingTime(p);
                 it = next(it);
             }
         }
     }
 
-    for(auto &p : toReinsert) {
+    for(auto *p : toReinsert) {
         // Adiciona o processo na fila apropriada
         enqueue(p);
     }
