@@ -4,9 +4,9 @@
 Scheduler::Scheduler() {}
 
 void Scheduler::orderProcesses() {
-    // Ordena a fila global de processos por prioridade (maior prioridade primeiro)
+    // Ordena a fila global de processos por prioridade (menor prioridade primeiro)
     std::sort(globalQueue.begin(), globalQueue.end(), [](const ProcessData& a, const ProcessData& b) {
-        return a.priority > b.priority; // Maior prioridade primeiro
+        return a.priority < b.priority; // Menor prioridade primeiro
     });
 }
 
@@ -79,5 +79,12 @@ void Scheduler::removeGlobalProcess(ProcessData& process) {
     });
     if (it != globalQueue.end()) {
         globalQueue.erase(it);
+    }
+}
+
+void Scheduler::checkWaitingTime() {
+    // Verifica o tempo de espera de cada processo na fila
+    if (!userQueue.isEmpty()) {
+        userQueue.checkWaitingTime(MAX_WAITING_TIME);
     }
 }
