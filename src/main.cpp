@@ -62,6 +62,7 @@ int main(int argc, char* argv[]) {
     }
 
     FileSystem fs(fsInit, processes);
+    std::unordered_map<int, PageTable> pageTables;
 
     // ----------------- ÁREA DE EXECUÇÃO ----------------- //
     while(true) {
@@ -140,14 +141,24 @@ int main(int argc, char* argv[]) {
 
         
         // ------ > VERIFICA SE TEM QUE FAZER REFERÊNCIAS DE MEMÓRIA < ------ //
-        else if (currentProcess->memoryReferences.size() > 0) {
+        else if ((int)currentProcess->memoryReferences.size() > 0) {
             // Executa a referência de memória
             int ref = currentProcess->memoryReferences.front();
             currentProcess->memoryReferences.erase(currentProcess->memoryReferences.begin());
 
+            auto it = pageTables.find(currentProcess->pid);
+            if(it == pageTables.end()) {
+                it = pageTables.emplace(
+                    currentProcess->pid,
+                    PageTable(&memoryManager, currentProcess)
+                ).first;
+            }
+
+            int frame = it->second.pageHit(ref);
+            
             //debug: Simula a execução da referência de memória
-            std::cout << "  Process " << currentProcess->pid << " executed memory reference: "
-                    << ref << std::endl;
+            std::cout << "  Process " << currentProcess->pid << " ref page: "
+                    << ref << " -> frame " << frame << "\n";
 
         } 
         
