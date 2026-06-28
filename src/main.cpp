@@ -61,23 +61,31 @@ int main(int argc, char* argv[]) {
     std::cout << "\n\n\nFila de Processos:\n";
     scheduler.printQueues();
     */
-
     int timeUsed, clock = 0;
 
 
     // ----------------- ÁREA DE EXECUÇÃO ----------------- //
-    while(true) {
+    while(true ) {
+        clock++; // Incrementa o relógio do sistema
+        
+        // if debug
+        std::cout << "\n\n\nClock: " << clock << "\n";
+        // end debug
+        
+        // Aumenta o tempo de espera dos processos nas filas
+        scheduler.checkWaitingTime();
+
+        // verifica se tem processo para iniciasr no clock atual
+        readyProcesses = dispatcher.initProcess(&processes, clock);
+        
+        if (!readyProcesses.empty()) {
+            scheduler.scaleProcess(readyProcesses);
+        }
+
         if (currentProcess == nullptr) {
             if (processes.empty() && scheduler.isEmpty()) {
                 std::cout << "Todos os processos foram executados.\n";
                 break;
-            }
-            clock++; // Incrementa o relógio do sistema
-            
-            readyProcesses = dispatcher.initProcess(&processes, clock);
-            
-            if (!readyProcesses.empty()) {
-                scheduler.scaleProcess(readyProcesses);
             }
             
             // Verifica se ainda existe processo no escalonador
