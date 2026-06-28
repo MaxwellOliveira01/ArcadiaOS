@@ -222,12 +222,13 @@ int main(int argc, char* argv[]) {
     /* ----- > Operações finais < ----- */
 
     // Mostra o disco
-    std::cout << "\n\033[1mMapa de ocupação do disco:\033[0m" << std::endl;
+    std::cout << "\n\033[1mMapa de ocupação do disco:\033[0m\n" << fs.getDiskMap() << " \n";
 
     // Mostra o numero de falta de páginas
-    std::cout << "\n\033[1mNúmero de faltas de páginas por processo:\033[0m" << std::endl;
-
-
+    std::cout << "\n\033[1mNúmero de faltas de páginas por processo:\033[0m\n";
+    for(auto &p : processes) {
+        cout << "P " << p.pid << " = " << p.pageFaults << " faltas de paginas\n";
+    }
 
 /*     
     // if debug

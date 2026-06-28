@@ -40,6 +40,8 @@ public:
 
     OperationResult execute(FileOperation &op);
 
+    std::string getDiskMap();
+
 private:
 
     OperationResult handleCreate(FileOperation &op);

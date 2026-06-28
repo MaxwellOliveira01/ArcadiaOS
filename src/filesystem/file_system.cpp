@@ -13,6 +13,10 @@ FileSystem::FileSystem(FileSystemInit& init, std::vector<ProcessData>& processes
     }
 };
 
+std::string FileSystem::getDiskMap() {
+    return diskUnit.getMemoryMap();
+}
+
 OperationResult FileSystem::execute(FileOperation &op) {
     if(op.pid < 0 || op.pid >= (int)processes.size()) {
         return OperationResult{false, "PID " + std::to_string(op.pid) + " inexistente"};
