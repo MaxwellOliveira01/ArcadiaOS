@@ -208,24 +208,22 @@ int main(int argc, char* argv[]) {
 
         timeUsed++;
 
-        if(currentProcess != nullptr) {
-            if (currentProcess->executedTime >= currentProcess->cpuTime && currentProcess->diskOperations.size() == 0 && currentProcess->memoryReferences.size() == 0) {
-                // Processo terminou, libera recursos e remove da fila
-                std::cout << "  Process " << currentProcess->pid << " has completed execution." << std::endl;
-                if(!currentProcess->realTime) {
-                    resourceManager.release(*currentProcess);
-                }
-                currentProcess = nullptr;
+        if (currentProcess != nullptr && currentProcess->executedTime >= currentProcess->cpuTime && currentProcess->diskOperations.size() == 0 && currentProcess->memoryReferences.size() == 0) {
+            // Processo terminou, libera recursos e remove da fila
+            std::cout << "  Process " << currentProcess->pid << " has completed execution." << std::endl;
+            if(!currentProcess->realTime) {
+                resourceManager.release(*currentProcess);
             }
+            currentProcess = nullptr;
+        }
+        
+        // -------------------- FIM DA EXECUÇÃO DO PROCESSO -------------------- //
+        
+        if (currentProcess != nullptr && !currentProcess->realTime && timeUsed >= scheduler.QUANTUM_TIME) {
+            // Se o processo de usuário atingiu o tempo de quantum, realimenta-o
+            scheduler.feedbackProcess(*currentProcess);
+            currentProcess = nullptr;
             
-            // -------------------- FIM DA EXECUÇÃO DO PROCESSO -------------------- //
-            
-            if (!currentProcess->realTime && timeUsed >= scheduler.QUANTUM_TIME) {
-                // Se o processo de usuário atingiu o tempo de quantum, realimenta-o
-                scheduler.feedbackProcess(*currentProcess);
-                currentProcess = nullptr;
-                
-            }
         }
     }
 
