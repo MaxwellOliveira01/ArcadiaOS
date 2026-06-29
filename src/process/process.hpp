@@ -21,7 +21,7 @@ struct ProcessData {
     int waitingTime = 0; // Tempo de espera na fila
 
     // Operações no disco
-    std::vector<FileOperation> diskOperations;
+    // std::vector<FileOperation> diskOperations;
 
     // Referências a memória
     std::vector<int> memoryReferences;

@@ -53,7 +53,6 @@ int main(int argc, char* argv[]) {
     std::cout << "Processos (" << processes.size() << "):\n";
     for(auto &p : processes) {
         // Passa as operações de disco e referências de memória para os processos
-        ProcessManipulator::setDiskOperations(&p, fileOps);
         ProcessManipulator::setMemoryReferences(&p, pageRefs[p.pid]);
 
         // Print dos processos criados
@@ -126,26 +125,26 @@ int main(int argc, char* argv[]) {
         }
         
 
-        // ------ > VERIFICA SE TEM QUE FAZER OPERAÇÕES NO DISCO < ------ //
-        else if ((int)currentProcess->diskOperations.size() > 0) {
-            systemOp++;
-            // Executa a operação de disco
-            FileOperation op = currentProcess->diskOperations.front();
-            currentProcess->diskOperations.erase(currentProcess->diskOperations.begin());
+        // // ------ > VERIFICA SE TEM QUE FAZER OPERAÇÕES NO DISCO < ------ //
+        // else if ((int)currentProcess->diskOperations.size() > 0) {
+        //     systemOp++;
+        //     // Executa a operação de disco
+        //     FileOperation op = currentProcess->diskOperations.front();
+        //     currentProcess->diskOperations.erase(currentProcess->diskOperations.begin());
 
-            fileSystemResult = fs.execute(op);
+        //     fileSystemResult = fs.execute(op);
 
-            // Print do resultado da operação de disco
-            if (fileSystemResult.success) {
-                std::cout << "  \033[1mOperação " << systemOp << " => Sucesso\033[0m\n";
-                std::cout << "  Processo " << currentProcess->pid << " "
-                    << (op.opCode == 0 ? "criou" : "deletou") << " o arquivo: "
-                    << op.fileName << (op.opCode == 0 ? "(criou " + std::to_string(op.numBlocks) + " blocos)" : "") << std::endl;
-            } else {
-                std::cout << "  \033[1mOperação " << systemOp << " => Falha\033[0m\n";
-                std::cout << "  Processo " << currentProcess->pid << " :" << fileSystemResult.message << std::endl;
-            }
-        } 
+        //     // Print do resultado da operação de disco
+        //     if (fileSystemResult.success) {
+        //         std::cout << "  \033[1mOperação " << systemOp << " => Sucesso\033[0m\n";
+        //         std::cout << "  Processo " << currentProcess->pid << " "
+        //             << (op.opCode == 0 ? "criou" : "deletou") << " o arquivo: "
+        //             << op.fileName << (op.opCode == 0 ? "(criou " + std::to_string(op.numBlocks) + " blocos)" : "") << std::endl;
+        //     } else {
+        //         std::cout << "  \033[1mOperação " << systemOp << " => Falha\033[0m\n";
+        //         std::cout << "  Processo " << currentProcess->pid << " :" << fileSystemResult.message << std::endl;
+        //     }
+        // } 
 
         
         // ------ > VERIFICA SE TEM QUE FAZER REFERÊNCIAS DE MEMÓRIA < ------ //
@@ -208,7 +207,7 @@ int main(int argc, char* argv[]) {
 
         timeUsed++;
 
-        if (currentProcess != nullptr && currentProcess->executedTime >= currentProcess->cpuTime && currentProcess->diskOperations.size() == 0 && currentProcess->memoryReferences.size() == 0) {
+        if (currentProcess != nullptr && currentProcess->executedTime >= currentProcess->cpuTime /*&& currentProcess->diskOperations.size() == 0*/ && currentProcess->memoryReferences.size() == 0) {
             // Processo terminou, libera recursos e remove da fila
             std::cout << "  Process " << currentProcess->pid << " has completed execution." << std::endl;
             if(!currentProcess->realTime) {
@@ -227,6 +226,22 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    std::cout << "\n\033[1mResultado das operacoes de disco:\0cc[03m\n" << "\n";
+    for(auto &op: fileOps) {
+        systemOp++;
+        auto r = fs.execute(op);
+        if(r.success) {
+            string opName = op.opCode == 0 ? "criou" : "deletou";
+            cout << "Operacao " << systemOp << " => Sucesso\n";
+            cout << " Processo " << op.pid << " "
+                << opName << " o arquivo: " << op.fileName
+                << (op.opCode == 0 ? " (" + to_string(op.numBlocks) + " blocos)" : "")
+                << "\n";
+        } else {
+            cout << "Operacao " << systemOp << " => Falha\n";
+            cout << " " << r.message << "\n";
+        }
+    }
 
     /* ----- > Operações finais < ----- */
 

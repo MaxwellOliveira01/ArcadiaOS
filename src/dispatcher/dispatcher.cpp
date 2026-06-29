@@ -18,12 +18,12 @@ std::string Dispatcher::toString(const ProcessData& process) const {
             "   drivers: " + std::to_string(process.requiresSata ? 1 : 0) + "\n";
 
     
-    for (const auto& op : process.diskOperations) {
-        output += "   Disk Operation: (opCode, fileName, numBlocks) = "
-                + std::to_string(op.opCode)
-                + ", " + op.fileName
-                + ", " + std::to_string(op.numBlocks) + "\n";
-    }
+    // for (const auto& op : process.diskOperations) {
+    //     output += "   Disk Operation: (opCode, fileName, numBlocks) = "
+    //             + std::to_string(op.opCode)
+    //             + ", " + op.fileName
+    //             + ", " + std::to_string(op.numBlocks) + "\n";
+    // }
 
     output += "   Memory Reference: ";
     if((int)process.memoryReferences.size() != 0) {
