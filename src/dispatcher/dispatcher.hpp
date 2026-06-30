@@ -42,9 +42,9 @@ class Dispatcher {
 
         bool allDone(std::vector<ProcessData>& processes, Scheduler& scheduler, int clock);
         
-        ProcessData* getNext(Scheduler& scheduler, ResourceManager& resourceManager, int& timeUsed);
+        ProcessData* getNext(Scheduler& scheduler, int& timeUsed);
 
-        void executeOneTick(ProcessData* current, PageTable& actPageTable);
+        void executeOneTick(ProcessData* current, PageTable& actPageTable, ResourceManager& resourceManager);
 
         void doMemoryReference(ProcessData* current, PageTable& actPageTable);
 

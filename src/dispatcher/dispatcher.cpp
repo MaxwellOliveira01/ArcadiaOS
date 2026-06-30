@@ -33,7 +33,7 @@ void Dispatcher::start(
                 continue;
             }
 
-            current = getNext(scheduler, resourceManager, timeUsed);
+            current = getNext(scheduler, timeUsed);
             if(current == nullptr) {
                 continue;
             }
@@ -43,7 +43,7 @@ void Dispatcher::start(
             std::cout << "Processo " << (current->pid) << " =>\n";
         }
 
-        executeOneTick(current, *actPageTable);
+        executeOneTick(current, *actPageTable, resourceManager);
         timeUsed++;
 
         if(processFinished(current)) {
@@ -136,13 +136,8 @@ bool Dispatcher::allDone(std::vector<ProcessData>& processes, Scheduler& schedul
     return !checkPendingProcesses(&processes, clock) && scheduler.isEmpty();
 }
         
-ProcessData* Dispatcher::getNext(Scheduler& scheduler, ResourceManager& resourceManager, int& timeUsed) {
+ProcessData* Dispatcher::getNext(Scheduler& scheduler, int& timeUsed) {
     ProcessData* next = scheduler.getProcess();
-
-    if(!next->realTime && !resourceManager.tryAllocate(*next)) {
-        scheduler.feedbackProcess(next);
-        return nullptr;
-    }
 
     if(!next->realTime) {
         timeUsed = 0;
@@ -153,7 +148,7 @@ ProcessData* Dispatcher::getNext(Scheduler& scheduler, ResourceManager& resource
 
 
 // CPU + Memoria + IO
-void Dispatcher::executeOneTick(ProcessData* current, PageTable& actPageTable) {
+void Dispatcher::executeOneTick(ProcessData* current, PageTable& actPageTable, ResourceManager& resourceManager) {
     // 1 - CPU
     if((current->executedTime) < (current->cpuTime)) {
         current->executedTime++;
@@ -167,7 +162,9 @@ void Dispatcher::executeOneTick(ProcessData* current, PageTable& actPageTable) {
 
     // 3 - IO
     else {
-        tryIO(current);
+        if(!current->realTime && !resourceManager.tryAllocate(*current)) {
+            tryIO(current);
+        }
     }
 
     // std::cout << " Processo " << (current->pid) << " completou sua execucao\n";
@@ -207,13 +204,19 @@ bool Dispatcher::tryIO(ProcessData* p) {
 }
 
 bool Dispatcher::processFinished(ProcessData* current) {
-    return current != nullptr
+    if (current != nullptr
         && (current->executedTime) >= current->cpuTime
-        && current->memoryReferences.empty()
-        && !current->requiresPrinter
-        && !current->requiresScanner
-        && !current->requiresModem
-        && !current->requiresSata;
+        && current->memoryReferences.empty()){
+            if(current->realTime) {
+                return true;
+            } else if (!current->requiresPrinter
+                && !current->requiresScanner
+                && !current->requiresModem
+                && !current->requiresSata) {
+                return true;
+            }
+        }
+    return false;
 }
 
 bool Dispatcher::quantumExpired(ProcessData* current, int timeUsed, Scheduler& scheduler) {
