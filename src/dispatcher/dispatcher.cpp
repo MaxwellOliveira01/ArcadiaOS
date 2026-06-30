@@ -187,7 +187,7 @@ bool Dispatcher::tryIO(ProcessData* p) {
         std::string name;
     };
 
-    IO ios[] = { // Colocar esses nomes em ptbr ou deixar em ing?
+    IO ios[] = { // Colocar esses nomes em ptbr ou deixar em ing? É melhor em ptbr
         { p->requiresPrinter, "printer"},
         { p->requiresScanner, "scanner"},
         { p->requiresModem, "modem"},
