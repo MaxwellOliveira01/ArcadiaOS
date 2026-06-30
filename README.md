@@ -28,7 +28,7 @@ Se esses comandos devem retornar a versão do compilador.
 
 Para executar o projeto, é necessário primeiro compila-lo, para psteriormente executa-lo. Para isso, é necessário executar os seguintes comandos make a baixo.
 
-**Compila o codigo**
+### **Compila o codigo**
 ```bash
 make
 ```
@@ -37,12 +37,12 @@ ou
 make all
 ```
 
-**Executar o código**
+### **Executar o código**
 ```bash
 make run 
 ```
 
-**Apagar os arquivos gerados**
+### **Apagar os arquivos gerados**
 ```bash
 make clean
 ```
