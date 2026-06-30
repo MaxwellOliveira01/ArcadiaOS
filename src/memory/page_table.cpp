@@ -3,6 +3,7 @@
 #include "../process/process.hpp"
 
 // Inicializa o contexto de memoria local do processo (construtor)
+PageTable::PageTable(){}
 PageTable::PageTable(MemoryManager* memMgr, ProcessData* proc) 
     : memoryManager(memMgr), process(proc), pTable(), localLRU() {
     

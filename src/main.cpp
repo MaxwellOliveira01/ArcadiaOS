@@ -42,12 +42,10 @@ int main(int argc, char* argv[]) {
     ResourceManager resourceManager;
     FileSystem fs(fsInit, processes);
 
-    unordered_map<int, PageTable> pageTables;
-
     dispatcher.printProcesses(processes, pageRefs);
     
     dispatcher.start(processes, scheduler, 
-        memoryManager, resourceManager, pageTables);
+        memoryManager, resourceManager);
 
     runFileOperations(fs, fileOps);
     printFinalReport(fs, processes);

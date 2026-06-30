@@ -8,13 +8,13 @@ void Dispatcher::start(
     std::vector<ProcessData>& processes,
     Scheduler& scheduler,
     MemoryManager& memoryManager,
-    ResourceManager& resourceManager,
-    std::unordered_map<int, PageTable>& pageTables
+    ResourceManager& resourceManager
 ) {
 
     int clock = 0;
     int timeUsed = 0;
     ProcessData* current = nullptr;
+    PageTable* actPageTable = nullptr;
 
     while(true) {
         clock++;
@@ -38,19 +38,25 @@ void Dispatcher::start(
                 continue;
             }
 
+            actPageTable = new PageTable(&memoryManager, current);
+
             std::cout << "Processo " << (current->pid) << " =>\n";
         }
 
-        executeOneTick(current, pageTables, memoryManager);
+        executeOneTick(current, *actPageTable);
         timeUsed++;
 
         if(processFinished(current)) {
             std::cout << " Processo " << (current->pid) << " foi completado com sucesso\n";
             finalizeProcess(current, resourceManager);
             current = nullptr;
+            delete actPageTable;
+            actPageTable = nullptr;
         } else if(quantumExpired(current, timeUsed, scheduler)) {
             scheduler.feedbackProcess(current);
             current = nullptr;
+            delete actPageTable;
+            actPageTable = nullptr;
         }
     }
 }
@@ -147,7 +153,7 @@ ProcessData* Dispatcher::getNext(Scheduler& scheduler, ResourceManager& resource
 
 
 // CPU + Memoria + IO
-void Dispatcher::executeOneTick(ProcessData* current, std::unordered_map<int, PageTable>& pageTables, MemoryManager& memoryManager) {
+void Dispatcher::executeOneTick(ProcessData* current, PageTable& actPageTable) {
     // 1 - CPU
     if((current->executedTime) < (current->cpuTime)) {
         current->executedTime++;
@@ -156,7 +162,7 @@ void Dispatcher::executeOneTick(ProcessData* current, std::unordered_map<int, Pa
 
     //2 - Memoria
     else if(!current->memoryReferences.empty()) {
-        doMemoryReference(current, pageTables, memoryManager);
+        doMemoryReference(current, actPageTable);
     }
 
     // 3 - IO
@@ -167,19 +173,11 @@ void Dispatcher::executeOneTick(ProcessData* current, std::unordered_map<int, Pa
     // std::cout << " Processo " << (current->pid) << " completou sua execucao\n";
 }
 
-void Dispatcher::doMemoryReference(ProcessData* current, std::unordered_map<int, PageTable>& pageTables, MemoryManager& memoryManager) {
+void Dispatcher::doMemoryReference(ProcessData* current, PageTable& actPageTable) {
     int ref = current->memoryReferences.front();
     current->memoryReferences.erase(current->memoryReferences.begin());
 
-    auto it = pageTables.find(current->pid);
-    if(it == pageTables.end()) {
-        it = pageTables.emplace(
-            current->pid,
-            PageTable(&memoryManager, current)
-        ).first;
-    }
-
-    int frame = it->second.pageHit(ref);
+    int frame = actPageTable.pageHit(ref);
     std::cout << " Processo " << (current->pid) << " ref page: " << ref << " -> frame " << frame << "\n"; 
 }
 

@@ -39,6 +39,7 @@ private:
 
 public:
 
+    PageTable();
     PageTable(MemoryManager* memMgr, ProcessData* proc);
 
     // Destrutor para liberar os frames fisicos globalmente

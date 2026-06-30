@@ -33,8 +33,7 @@ class Dispatcher {
             std::vector<ProcessData>& processes,
             Scheduler& scheduler,
             MemoryManager& memoryManager,
-            ResourceManager& resourceManager,
-            std::unordered_map<int, PageTable>& pageTables
+            ResourceManager& resourceManager
         );
 
     private:
@@ -45,9 +44,9 @@ class Dispatcher {
         
         ProcessData* getNext(Scheduler& scheduler, ResourceManager& resourceManager, int& timeUsed);
 
-        void executeOneTick(ProcessData* current, std::unordered_map<int, PageTable>& pageTables, MemoryManager& memoryManager);
+        void executeOneTick(ProcessData* current, PageTable& actPageTable);
 
-        void doMemoryReference(ProcessData* current, std::unordered_map<int, PageTable>& pageTables, MemoryManager& memoryManager);
+        void doMemoryReference(ProcessData* current, PageTable& actPageTable);
 
         bool tryIO(ProcessData* current);
 
