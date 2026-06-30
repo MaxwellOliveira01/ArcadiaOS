@@ -67,7 +67,7 @@ OperationResult FileSystem::handleDelete(FileOperation& op) {
     auto processOwner = processes[op.pid];
 
     // pra alterar tem que ter permissao:
-    //  - se ele for realmente ele pode
+    //  - se ele for realtime ele pode
     //  - se ele nao for realtime, só pode se o arquivo for dele
     if(!processOwner.realTime) {
         auto ownerIt = fileOwner.find(op.fileName);
