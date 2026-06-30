@@ -2,9 +2,66 @@
 #include <stdexcept>
 #include <algorithm>
 
-#include "../process/process.hpp"
-
 Dispatcher::Dispatcher() {}
+
+void Dispatcher::start(
+    std::vector<ProcessData>& processes,
+    Scheduler& scheduler,
+    MemoryManager& memoryManager,
+    ResourceManager& resourceManager,
+    std::unordered_map<int, PageTable>& pageTables
+) {
+
+    int clock = 0;
+    int timeUsed = 0;
+    ProcessData* current = nullptr;
+
+    while(true) {
+        clock++;
+        std::cout << "\n\n\nClock: " << clock << "\n";
+
+        scheduler.checkWaitingTime();
+        admitNewProcesses(processes, scheduler, clock);
+
+        if(current == nullptr) {
+            if(allDone(processes, scheduler, clock)) {
+                std::cout << "Todos os processos foram executados.\n";
+                break;
+            }
+
+            if(scheduler.isEmpty()) {
+                continue;
+            }
+
+            current = getNext(scheduler, resourceManager, timeUsed);
+            if(current == nullptr) {
+                continue;
+            }
+
+            std::cout << "Processo " << (current->pid) << " =>\n";
+        }
+
+        executeOneTick(current, pageTables, memoryManager);
+        timeUsed++;
+
+        if(processFinished(current)) {
+            std::cout << " Processo " << (current->pid) << " foi completado com sucesso\n";
+            finalizeProcess(current, resourceManager);
+            current = nullptr;
+        } else if(quantumExpired(current, timeUsed, scheduler)) {
+            scheduler.feedbackProcess(current);
+            current = nullptr;
+        }
+    }
+}
+
+void Dispatcher::printProcesses(std::vector<ProcessData>& processes, std::vector<std::vector<int>>& pageRefs) {
+    std::cout << "Processo (" << processes.size() << "):\n";
+    for(auto &p : processes) {
+        ProcessManipulator::setMemoryReferences(&p, pageRefs[p.pid]);
+        std::cout << toString(p);
+    }
+}
 
 std::string Dispatcher::toString(const ProcessData& process) const {
     std::string output = "dispatcher =>\n"
@@ -57,4 +114,116 @@ bool Dispatcher::checkPendingProcesses(std::vector<ProcessData>* processes, cons
         }
     }
     return false; // No pending processes
+}
+
+// privado
+
+
+void Dispatcher::admitNewProcesses(std::vector<ProcessData>& processes, Scheduler& scheduler, int clock) {
+    std::vector<ProcessData*> ready = initProcess(&processes, clock);
+    if(!ready.empty()) {
+        scheduler.scaleProcess(ready);
+    }
+}
+
+bool Dispatcher::allDone(std::vector<ProcessData>& processes, Scheduler& scheduler, int clock) {
+    return !checkPendingProcesses(&processes, clock) && scheduler.isEmpty();
+}
+        
+ProcessData* Dispatcher::getNext(Scheduler& scheduler, ResourceManager& resourceManager, int& timeUsed) {
+    ProcessData* next = scheduler.getProcess();
+
+    if(!next->realTime && !resourceManager.tryAllocate(*next)) {
+        scheduler.feedbackProcess(next);
+        return nullptr;
+    }
+
+    if(!next->realTime) {
+        timeUsed = 0;
+    }
+
+    return next;
+}
+
+
+// CPU + Memoria + IO
+void Dispatcher::executeOneTick(ProcessData* current, std::unordered_map<int, PageTable>& pageTables, MemoryManager& memoryManager) {
+    // 1 - CPU
+    if((current->executedTime) < (current->cpuTime)) {
+        current->executedTime++;
+        std::cout << " P" << (current->pid) << " instrucao " << (current->executedTime) << "\n";
+    }
+
+    //2 - Memoria
+    else if(!current->memoryReferences.empty()) {
+        doMemoryReference(current, pageTables, memoryManager);
+    }
+
+    // 3 - IO
+    else {
+        tryIO(current);
+    }
+
+    // std::cout << " Processo " << (current->pid) << " completou sua execucao\n";
+}
+
+void Dispatcher::doMemoryReference(ProcessData* current, std::unordered_map<int, PageTable>& pageTables, MemoryManager& memoryManager) {
+    int ref = current->memoryReferences.front();
+    current->memoryReferences.erase(current->memoryReferences.begin());
+
+    auto it = pageTables.find(current->pid);
+    if(it == pageTables.end()) {
+        it = pageTables.emplace(
+            current->pid,
+            PageTable(&memoryManager, current)
+        ).first;
+    }
+
+    int frame = it->second.pageHit(ref);
+    std::cout << " Processo " << (current->pid) << " ref page: " << ref << " -> frame " << frame << "\n"; 
+}
+
+bool Dispatcher::tryIO(ProcessData* p) {
+    struct IO {
+        bool& flag;
+        std::string name;
+    };
+
+    IO ios[] = { // Colocar esses nomes em ptbr ou deixar em ing?
+        { p->requiresPrinter, "printer"},
+        { p->requiresScanner, "scanner"},
+        { p->requiresModem, "modem"},
+        { p->requiresSata, "sata"},
+    };
+
+    for(auto& io : ios) {
+        if(io.flag) {
+            std::cout << " Process " << (p->pid) << " está usando o/a " << io.name << "\n";
+            io.flag = false;
+            return true; 
+        }
+    }
+
+    return false;
+
+}
+
+bool Dispatcher::processFinished(ProcessData* current) {
+    return current != nullptr
+        && (current->executedTime) >= current->cpuTime
+        && current->memoryReferences.empty()
+        && !current->requiresPrinter
+        && !current->requiresScanner
+        && !current->requiresModem
+        && !current->requiresSata;
+}
+
+bool Dispatcher::quantumExpired(ProcessData* current, int timeUsed, Scheduler& scheduler) {
+    return current != nullptr && !current->realTime && timeUsed >= scheduler.QUANTUM_TIME;
+}
+
+void Dispatcher::finalizeProcess(ProcessData* current, ResourceManager& resourceManager) {
+    if(!current->realTime) {
+        resourceManager.release(*current);
+    }
 }
