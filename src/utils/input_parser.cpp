@@ -86,6 +86,9 @@ namespace InputParser {
 
             p.realTime = (p.priority == 0);
 
+            if(p.realTime && p.workingSetSize > 8) p.workingSetSize = 8;
+            if(!p.realTime && p.workingSetSize > 12) p.workingSetSize = 12;
+
             processes.push_back(p);
         }
 
