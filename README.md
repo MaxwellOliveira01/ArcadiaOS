@@ -32,14 +32,14 @@ Se os comandos retornarem suas respectivas versões, o ambiente está pronto par
 
 ## Como rodar?
 
-Primeiro, é fundamental que tenham 3 arquivos na pasta [/testcases](./testcases/) :
-- [file.txt](./testcases/files.txt) -> Arquivo de informações do disco e operações
-- [processes.txt](./testcases/processes.txt) -> Arquivo de processos
-- [string.txt](./testcases/string.txt) -> Arquivo com as referências a memória
+Por padrão, o simulador utiliza o teste localizados na pasta [/testcases/example](./testcases/example). Para o funcionamento correto, é fundamental que existam estes 3 arquivos dentro da pasta escolhida:
+- [file.txt](./testcases/example/files.txt) -> Arquivo de informações do disco e operações
+- [processes.txt](./testcases/example/processes.txt) -> Arquivo de processos
+- [string.txt](./testcases/example/string.txt) -> Arquivo com as referências a memória
 
-**JAMAIS DELETE ESSES ARQUIVOS**
+**JAMAIS DELETE ESSES ARQUIVOS DA PASTA EXAMPLE**
 
-Você pode alterar as informações presentes nos mesmos para testar funcionalidades, mas jamais deletar.
+Você pode alterar as informações presentes nos mesmos para testar funcionalidades, ou criar uma nova pasta e adicionar novos cenários de teste, mas jamais deletá-los.
 
 ---
 Em seguida, basta compilar o projeto e executar o código utilizando os comandos **make** abaixo.
@@ -54,8 +54,19 @@ make all
 ```
 
 ### **Executar o código**
+
+O comando de execução foi projetado para ler três arquivos obrigatórios de uma pasta no diretório `/testcases` (processes.txt, files.txt e string.txt).
+
+#### Cenário Padrão (`example`)
+Por padrão, se você executar apenas o comando abaixo, o sistema rodará os testes contidos na pasta [/testcases/example](./testcases/example):
 ```bash
 make run 
+```
+#### Cenário Customizado
+Caso queira rodar testes de outra pasta basta passar a variável TESTCASE com o nome da respectiva pasta criada dentro do diretório `/testcases`:
+```bash
+# Exemplo para rodar os testes da pasta /testcases/test1
+make run TESTCASE=test1
 ```
 
 ### **Apagar os arquivos gerados**
