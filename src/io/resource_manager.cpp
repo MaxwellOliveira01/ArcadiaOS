@@ -7,24 +7,32 @@ ResourceManager::ResourceManager() {
     sata = TOTAL_SATA;
 };
 
-bool ResourceManager::tryAllocate(ProcessData& process) {
-    
-    if(process.requiresPrinter && printers == 0) return false;
-    if(process.requiresModem && modems == 0) return false;
-    if(process.requiresSata && sata == 0) return false;
-    if(process.requiresScanner && scanners == 0) return false;
+IOAllocation ResourceManager::tryAllocate(ProcessData& process) {
+    IOAllocation iosAlloc = {
+        printers - process.requiresPrinter < 0 ? printers : process.requiresPrinter,
+        scanners - process.requiresScanner < 0 ? scanners : process.requiresScanner,
+        modems - process.requiresModem < 0 ? modems : process.requiresModem,
+        sata - process.requiresSata < 0 ? sata : process.requiresSata
+    };
 
-    printers -= process.requiresPrinter;
-    modems -= process.requiresModem;
-    sata -= process.requiresSata;
-    scanners -= process.requiresScanner;
+    // Primeiro diminui a quantidade de recursos disponíveis    
+    printers -= iosAlloc.printersUsed;
+    modems -= iosAlloc.modemsUsed;
+    sata -= iosAlloc.sataUsed;
+    scanners -= iosAlloc.scannersUsed;
+
+    // Depois diminui a quantidade de recursos que o processo ainda precisa ter posse.
+    process.requiresPrinter -= iosAlloc.printersUsed;
+    process.requiresModem -= iosAlloc.modemsUsed;
+    process.requiresSata -= iosAlloc.sataUsed;
+    process.requiresScanner -= iosAlloc.scannersUsed;
     
-    return true;
+    return iosAlloc;
 }
 
-void ResourceManager::release(ProcessData& process) {
-    if(process.requiresPrinter) printers++; 
-    if(process.requiresModem) modems++; 
-    if(process.requiresSata) sata++; 
-    if(process.requiresScanner) scanners++; 
+void ResourceManager::release(const IOAllocation& ioAlloc) {
+    printers += ioAlloc.printersUsed;
+    modems += ioAlloc.modemsUsed;
+    sata += ioAlloc.sataUsed;
+    scanners += ioAlloc.scannersUsed;
 }

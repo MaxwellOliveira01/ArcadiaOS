@@ -39,6 +39,11 @@ void Dispatcher::start(
             }
 
             actPageTable = new PageTable(&memoryManager, current);
+            
+            // Se o processo estiver na lista, quer dizer que ele ainda está usando IO, então libera os recursos que ele estava usando para usar novos.
+            if (ListIOUsed.find(current->pid) != ListIOUsed.end()) {
+                freeResources(current, resourceManager);
+            } 
 
             std::cout << "Processo " << (current->pid) << " =>\n";
         }
@@ -48,7 +53,7 @@ void Dispatcher::start(
 
         if(processFinished(current)) {
             std::cout << " Processo " << (current->pid) << " foi completado com sucesso\n";
-            finalizeProcess(current, resourceManager);
+            freeResources(current, resourceManager);
             current = nullptr;
             delete actPageTable;
             actPageTable = nullptr;
@@ -162,8 +167,7 @@ void Dispatcher::executeOneTick(ProcessData* current, PageTable& actPageTable, R
 
     // 3 - IO
     else if(!current->realTime) {
-        resourceManager.tryAllocate(*current);
-        tryIO(current);
+        tryIO(current, resourceManager);
     }
 
     // std::cout << " Processo " << (current->pid) << " completou sua execucao\n";
@@ -177,28 +181,20 @@ void Dispatcher::doMemoryReference(ProcessData* current, PageTable& actPageTable
     std::cout << " Processo " << (current->pid) << " ref page: " << ref << " -> frame " << frame << "\n"; 
 }
 
-bool Dispatcher::tryIO(ProcessData* p) {
-    struct IO {
-        bool& flag;
-        std::string name;
-    };
+void Dispatcher::tryIO(ProcessData* p, ResourceManager& resourceManager) {
+    ListIOUsed[p->pid] = resourceManager.tryAllocate(*p);
 
-    IO ios[] = { // Colocar esses nomes em ptbr ou deixar em ing? É melhor em ptbr
-        { p->requiresPrinter, "printer"},
-        { p->requiresScanner, "scanner"},
-        { p->requiresModem, "modem"},
-        { p->requiresSata, "sata"},
-    };
+    IOAllocation ioUsed = ListIOUsed[p->pid];
 
-    for(auto& io : ios) {
-        if(io.flag) {
-            std::cout << " Process " << (p->pid) << " está usando o/a " << io.name << "\n";
-            io.flag = false;
-            return true; 
-        }
+    if (ioUsed.printersUsed == 0 && ioUsed.scannersUsed == 0 && ioUsed.modemsUsed == 0 && ioUsed.sataUsed == 0) {
+        std::cout << " Processo " << (p->pid) << " requisitou IO, mas não conseguiu alocar nenhum recurso\n";
+        return;
     }
-
-    return false;
+    std::cout << " Processo " << (p->pid) << " requisitou IO:\n"
+        << "   " << ioUsed.printersUsed << " impressoras\n"
+        << "   " << ioUsed.scannersUsed << " scanners\n"
+        << "   " << ioUsed.modemsUsed << " modems\n"
+        << "   " << ioUsed.sataUsed << " drivers SATA\n\n";
 
 }
 
@@ -208,10 +204,10 @@ bool Dispatcher::processFinished(ProcessData* current) {
         && current->memoryReferences.empty()){
             if(current->realTime) {
                 return true;
-            } else if (!current->requiresPrinter
-                && !current->requiresScanner
-                && !current->requiresModem
-                && !current->requiresSata) {
+            } else if (current->requiresPrinter <= 0
+                && current->requiresScanner <= 0
+                && current->requiresModem <= 0
+                && current->requiresSata <= 0) {
                 return true;
             }
         }
@@ -222,8 +218,13 @@ bool Dispatcher::quantumExpired(ProcessData* current, int timeUsed, Scheduler& s
     return current != nullptr && !current->realTime && timeUsed >= scheduler.QUANTUM_TIME;
 }
 
-void Dispatcher::finalizeProcess(ProcessData* current, ResourceManager& resourceManager) {
+void Dispatcher::freeResources(ProcessData* current, ResourceManager& resourceManager) {
     if(!current->realTime) {
-        resourceManager.release(*current);
+        resourceManager.release(ListIOUsed[current->pid]);
+        clearListIOUsed(current->pid);
     }
+}
+
+void Dispatcher::clearListIOUsed(int pid) {
+    ListIOUsed.erase(pid);
 }

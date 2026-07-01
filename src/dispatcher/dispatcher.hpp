@@ -37,6 +37,8 @@ class Dispatcher {
         );
 
     private:
+        // Lista de usos de IO por processo, cada Id de processo possui um IOAllocation que indica quantos recursos de cada tipo ele está usando
+        std::map<int, IOAllocation> ListIOUsed;
 
         void admitNewProcesses(std::vector<ProcessData>& processes, Scheduler& scheduler, int clock);
 
@@ -48,13 +50,16 @@ class Dispatcher {
 
         void doMemoryReference(ProcessData* current, PageTable& actPageTable);
 
-        bool tryIO(ProcessData* current);
+        void tryIO(ProcessData* current, ResourceManager& resourceManager);
 
         bool processFinished(ProcessData* current);
 
         bool quantumExpired(ProcessData* current, int timeUsed, Scheduler& scheduler);
 
-        void finalizeProcess(ProcessData* current, ResourceManager& resourceManager);
+        void freeResources(ProcessData* current, ResourceManager& resourceManager);
+
+        // Tira o processo da lista de processos que estão usando IO
+        void clearListIOUsed(int pid);
 
 };
 

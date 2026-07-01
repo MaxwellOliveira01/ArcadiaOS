@@ -3,6 +3,13 @@
 
 #include "../process/process.hpp"
 
+struct IOAllocation {
+    int printersUsed;
+    int scannersUsed;
+    int modemsUsed;
+    int sataUsed;
+};
+
 class ResourceManager {
 
 public:
@@ -17,12 +24,12 @@ public:
     // Tenta alocar todos os recursos que esse processo pede
     // retorna true se consegue pegar TODOS
     // se faltar 1 ou mais, retorna false
-    bool tryAllocate(ProcessData& process);
+    IOAllocation tryAllocate(ProcessData& process);
 
     // Libera todos os recursos que esse processo tinha pegado
     // Não verifica se esse processo já passou pelo tryAllocate
     // isso fica como responsabilidade de quem chama
-    void release(ProcessData& process);
+    void release(const IOAllocation& ioAlloc);
 
 private:
     int printers;
