@@ -79,10 +79,10 @@ namespace InputParser {
             p.priority = stoi(fields[1]);
             p.cpuTime = stoi(fields[2]);
             p.workingSetSize = stoi(fields[3]);
-            p.requiresPrinter = stoi(fields[4]) != 0;
-            p.requiresScanner = stoi(fields[5]) != 0;
-            p.requiresModem = stoi(fields[6]) != 0;
-            p.requiresSata = stoi(fields[7]) != 0;
+            p.requiresPrinter = stoi(fields[4]);
+            p.requiresScanner = stoi(fields[5]);
+            p.requiresModem = stoi(fields[6]);
+            p.requiresSata = stoi(fields[7]);
 
             p.realTime = (p.priority == 0);
 

@@ -10,10 +10,10 @@ struct ProcessData {
     int cpuTime;
     int workingSetSize;
     int pageFaults = 0;
-    bool requiresPrinter;
-    bool requiresScanner;
-    bool requiresModem;
-    bool requiresSata;
+    int requiresPrinter;
+    int requiresScanner;
+    int requiresModem;
+    int requiresSata;
     
     int executedTime = 0; // Tempo de CPU já utilizado
     
