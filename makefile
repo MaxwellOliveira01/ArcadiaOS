@@ -32,8 +32,10 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+TESTCASE ?= example
+
 run: $(TARGET)
-	./$(TARGET) testcases/processes.txt testcases/files.txt testcases/string.txt
+	./$(TARGET) testcases/$(TESTCASE)/processes.txt testcases/$(TESTCASE)/files.txt testcases/$(TESTCASE)/string.txt
 
 clean:
 	rm -rf $(BUILD_DIR) $(TARGET)
