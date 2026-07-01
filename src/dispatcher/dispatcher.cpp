@@ -161,10 +161,9 @@ void Dispatcher::executeOneTick(ProcessData* current, PageTable& actPageTable, R
     }
 
     // 3 - IO
-    else {
-        if(!current->realTime && !resourceManager.tryAllocate(*current)) {
-            tryIO(current);
-        }
+    else if(!current->realTime) {
+        resourceManager.tryAllocate(*current);
+        tryIO(current);
     }
 
     // std::cout << " Processo " << (current->pid) << " completou sua execucao\n";
