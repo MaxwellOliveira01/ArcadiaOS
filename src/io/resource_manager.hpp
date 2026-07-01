@@ -14,10 +14,10 @@ class ResourceManager {
 
 public:
 
-    const int TOTAL_PRINTERS = 2;
-    const int TOTAL_SCANNERS = 1;
-    const int TOTAL_MODEMS = 1;
-    const int TOTAL_SATA = 2;
+    static constexpr int TOTAL_PRINTERS = 2;
+    static constexpr int TOTAL_SCANNERS = 1;
+    static constexpr int TOTAL_MODEMS = 1;
+    static constexpr int TOTAL_SATA = 2;
 
     ResourceManager();
 

@@ -1,4 +1,5 @@
 #include "input_parser.hpp"
+#include "../io/resource_manager.hpp"
 
 #include <algorithm>
 #include <fstream>
@@ -83,6 +84,26 @@ namespace InputParser {
             p.requiresScanner = stoi(fields[5]);
             p.requiresModem = stoi(fields[6]);
             p.requiresSata = stoi(fields[7]);
+
+            if(p.requiresPrinter > ResourceManager::TOTAL_PRINTERS) {
+                throw std::runtime_error("Processo " + std::to_string(p.pid) + " requisita mais impressoras do que" +
+                    "existem (max " + std::to_string(ResourceManager::TOTAL_PRINTERS) + ")");
+            }
+            
+            if(p.requiresScanner > ResourceManager::TOTAL_SCANNERS) { 
+                throw std::runtime_error("Processo " + std::to_string(p.pid) + " requisita mais scanners do que " +
+                    "existem (max " + std::to_string(ResourceManager::TOTAL_SCANNERS) + ")");
+            }
+            
+            if(p.requiresModem > ResourceManager::TOTAL_MODEMS) { 
+                throw std::runtime_error("Processo " + std::to_string(p.pid) + " requisita mais modems do que " + 
+                    "existem (max " + std::to_string(ResourceManager::TOTAL_MODEMS) + ")");
+            }
+            
+            if(p.requiresSata > ResourceManager::TOTAL_SATA) { 
+                throw std::runtime_error("Processo " + std::to_string(p.pid) + " requisita mais drivers SATA do que " + 
+                    "existem (max " + std::to_string(ResourceManager::TOTAL_SATA) + ")");
+            }
 
             p.realTime = (p.priority == 0);
 
